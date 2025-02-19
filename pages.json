@@ -1,0 +1,268 @@
+{
+	"pages": [
+
+		{
+			"path": "pages/admin_send_cmd/admin_send_cmd",
+			"style": {
+				"navigationBarTitleText": "调试售货柜"
+
+			}
+		},
+		{
+			"path": "pages/admin_send_cmd2/admin_send_cmd",
+			"style": {
+				"navigationBarTitleText": "调试售货柜"
+
+			}
+		},
+		{
+			"path": "pages/GKGoods/GKGoods",
+			"style": {
+				"navigationStyle": "custom"
+			},
+			"app-plus": {
+				"titleView": false
+			}
+		}, {
+			"path": "pages/stomprabbitmq-stomprabbitmq/stomprabbitmq-stomprabbitmq",
+			"style": {
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+
+		}, {
+			"path": "pages/index/index",
+			"style": {
+				"navigationStyle": "custom"
+			},
+			"app-plus": {
+				"titleView": false
+			}
+		}, {
+			"path": "pages/Paycash/Paycash",
+			"style": {
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+		}, {
+			"path": "pages/Paycoin/Paycoin",
+			"style": {
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+		}, {
+			"path": "pages/Login/Login",
+			"style": {
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+
+		}, {
+			"path": "pages/GKogin/login",
+			"style": {
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+
+		}, {
+			"path": "pages/AddGoods/AddGoods",
+			"style": {
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+
+		}, {
+			"path": "pages/SetMeal/SetMeal",
+			"style": {
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+
+		}, {
+			"path": "pages/PaySuccess/PaySuccess",
+			"style": {
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+
+		}, {
+			"path": "pages/Help/Help",
+			"style": {
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+
+		}, {
+			"path": "pages/CeShi/CeShi",
+			"style": {
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": false
+			}
+		}, {
+			"path": "pages/OtherMsg/OtherMsg",
+			"style": {
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+
+		}, {
+			"path": "pages/admin_send_cmd/admin_send_cmd",
+			"style": {
+				"navigationBarTitleText": "调试售货柜"
+
+			}
+		}, {
+			"path": "pages/toHelp/toHelp",
+			"style": {
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+
+		},
+		{
+			"path": "pages/Camera/Camera",
+			"style": {
+				"navigationBarTitleText": "相机测试"
+			}
+		},
+		{
+			"path": "pages/NewCamera/NewCamera",
+			"style": {
+				"navigationBarTitleText": "相机测试"
+			}
+		},
+		{
+			"path": "pages/NewCamera/index",
+			"style": {
+				"navigationBarTitleText": "相机测试"
+			}
+		},
+		{
+			"path": "pages/canvasTest/canvasTest",
+			"style": {
+				"navigationBarTitleText": "canvas调试"
+			}
+		},
+		{
+			"path": "pages/canvasTest2/canvasTest2",
+			"style": {
+				"navigationBarTitleText": ""
+			}
+		},
+		{
+			"path": "pages/canvas/canvas",
+			"style": {
+				"navigationBarTitleText": ""
+			}
+		},
+		{
+			"path": "pages/canvasTest3/canvasTest3",
+			"style": {
+				"navigationBarTitleText": ""
+			}
+		},
+		{
+			"path": "pages/canvas/animation",
+			"style": {
+				"navigationBarTitleText": "Animation"
+			}
+		},
+		{
+			"path": "pages/canvas/canvas",
+			"style": {
+				"navigationBarTitleText": "CanvasAPI"
+			}
+		},
+		{
+			"path": "pages/canvas/webGL",
+			"style": {
+				"navigationBarTitleText": "webGL"
+			}
+		}
+	],
+	//分包加载
+	"subPackages": [{
+			"root": "pages/index",
+			"pages": [{
+				"path": "index",
+				"style": {
+					"navigationStyle": "custom"
+				}
+			}]
+		},
+		{
+			"root": "pages/Login",
+			"pages": [{
+				"path": "Login",
+				"style": {
+					"navigationStyle": "custom"
+				}
+			}]
+		},
+		{
+			"root": "pages/AddGoods",
+			"pages": [{
+				"path": "AddGoods",
+				"style": {
+					"navigationStyle": "custom"
+				}
+			}]
+		}, {
+			"root": "pages/SetMeal",
+			"pages": [{
+				"path": "SetMeal",
+				"style": {
+					"navigationStyle": "custom"
+				}
+			}]
+		},
+		{
+			"root": "pages/PaySuccess",
+			"pages": [{
+				"path": "PaySuccess",
+				"style": {
+					"navigationStyle": "custom"
+				}
+			}]
+		}, {
+			"root": "pages/Help",
+			"pages": [{
+				"path": "Help",
+				"style": {
+					"navigationStyle": "custom"
+				}
+			}]
+		},
+		{
+			"root": "pages/OtherMsg",
+			"pages": [{
+				"path": "OtherMsg",
+				"style": {
+					"navigationStyle": "custom"
+				}
+			}]
+		}
+	],
+
+	"globalStyle": {
+		"navigationBarTextStyle": "white",
+		// "navigationBarTitleText": "uni-app",
+		"navigationBarBackgroundColor": "#7dbbea",
+		"backgroundColor": "#F8F8F8",
+		"navigationStyle": "custom",
+		"app-plus": {
+			"background": "#efeff4"
+		}
+	}
+}

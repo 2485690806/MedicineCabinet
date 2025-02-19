@@ -1,0 +1,2739 @@
+<template>
+	<view>
+
+		<uni-nav-bar height="30px" :border="false" left-icon="back" title="测试页面" @clickLeft="back" />
+
+		<view style="font-size: 20rpx;">
+
+			当前设备号：{{storeId}}
+		</view>
+
+
+
+
+
+		<view class="Xian"></view>
+		<view class="RecoudTextIndex">
+			收到指令:
+			<view class="RecoudText">
+				<view v-for="(item,index) in RecoudText" :key="index">
+					{{item}}
+				</view>
+			</view>
+			<view class="CenShiIndex">
+				<button class="ShouYeButton1" type="primary" @click="RecoudText=[]">清空消息</button>
+			</view>
+		</view>
+
+		<view class="Xian"></view>
+		<view class="Xian"></view>
+		<view class="RecoudTextIndex">
+			发送指令:
+			<view class="RecoudText">
+				<view v-for="(item,index) in SendText" :key="index">
+					{{item}}
+				</view>
+			</view>
+			<view class="CenShiIndex">
+				<button class="ShouYeButton1" type="primary" @click="SendText=[]">清空消息</button>
+			</view>
+		</view>
+
+		<view class="Xian"></view>
+
+
+		<view class="RecoudTextIndex">
+			错误码:
+			<view class="RecoudText">
+				{{CWMcode}}
+			</view>
+
+
+		</view>
+
+
+		<view class="Xian"></view>
+		<view class="RecoudTextIndex">
+			下侧门收到指令:
+			<view class="RecoudText">
+				<view v-for="(item,index) in RecoudTextTHJ" :key="index">
+					{{item}}
+				</view>
+			</view>
+
+			<view class="CenShiIndex">
+				<button class="ShouYeButton1" type="primary" @click="RecoudTextTHJ=[]">清空消息</button>
+			</view>
+
+
+		</view>
+
+		<view class="Xian"></view>
+		<view class="Xian"></view>
+		<view class="RecoudTextIndex">
+			下侧门发送指令:
+			<view class="RecoudText">
+				<view v-for="(item,index) in SendTextTHJ" :key="index">
+					{{item}}
+				</view>
+			</view>
+			<view class="CenShiIndex">
+				<button class="ShouYeButton1" type="primary" @click="SendTextTHJ=[]">清空消息</button>
+			</view>
+		</view>
+
+
+		<view class="CenShiIndex">
+			<button class="changeButton" type="primary" @click="nowLiuCheng = 1">取货流程</button>
+			<button class="changeButton" type="primary" @click="nowLiuCheng = 2">回收流程</button>
+			<button class="changeButton" type="primary" @click="nowLiuCheng = 3">部件测试</button>
+			<button class="changeButton" type="primary" @click="nowLiuCheng = 4">履带测试</button>
+			<!-- 			<button class="changeButton" type="primary" @click="snapshot()">
+				拍照测试
+			</button>
+			<button class="changeButton" type="primary" @click="toCanvas()">
+				Canvas调试
+			</button>
+			<button class="changeButton" type="primary" @click="toCanvas2()">
+				Canvas调试2
+			</button>
+			<button class="changeButton" type="primary" @click="toCanvas3()">
+				Canvas调试3
+			</button>
+			<button class="changeButton" type="primary" @click="snapshot2()">
+				拍照测试2
+			</button> -->
+			<!-- <button class="changeButton" type="primary" @click="nowLiuCheng = 3">履带测试</button> -->
+			<uni-title type="h3"
+				:title="nowLiuCheng==1?'取货流程':nowLiuCheng==2?'回收流程':nowLiuCheng==3?'部件测试':'履带测试'"></uni-title>
+		</view>
+
+		<!-- <uni-title type="h1" title="------------取货口出货控制流程-------------"></uni-title> -->
+
+		<view class="" v-if="nowLiuCheng == 1">
+			<view class="CenShiIndex" v-for="(layer, index) in layers" :key="index">
+				<button class="ShouYeButton2" type="warn">
+					第{{ layer.name }}层
+				</button>
+				<button class="ShouYeButton2" type="primary" v-for="item of layer.count" :key="item"
+					@click="SendShouHuoT(layer.index, item)">
+					货道{{ item }}
+				</button>
+			</view>
+		</view>
+
+
+		<!-- <uni-title type="h1" title="------------回收口出货控制流程-------------"></uni-title> -->
+
+
+		<view class="" v-if="nowLiuCheng == 2">
+
+			<view class="CenShiIndex" v-for="(layer, index) in layers" :key="index">
+				<button class="ShouYeButton2" type="warn">
+					第{{ layer.name }}层
+				</button>
+				<button class="ShouYeButton2" type="primary" v-for="item of layer.count" :key="item"
+					@click="HuiShouSendShouHuoT(layer.index, item)">
+					货道{{ item }}
+				</button>
+			</view>
+
+
+
+		</view>
+
+
+
+		<!-- <uni-title type="h1" title="------------电机测试-------------"></uni-title> -->
+
+		<view class="" v-if="nowLiuCheng == 3">
+
+			<view class="CenShiIndex">
+				<button class="ShouYeButton1" type="warn" @click="sendGYCommand()">
+					状态查询
+				</button>
+				<button class="ShouYeButton1" type="warn" @click="init()">
+					重新连接
+				</button>
+			</view>
+
+			<view class="CenShiIndex">
+
+				<button class="ShouYeButton2" type="warn">
+					升降机测试
+				</button>
+				<button class="ShouYeButton3" type="primary" @click="sendJDJZZCommand()">
+					Y轴升降机上升
+				</button>
+				<button class="ShouYeButton3" type="primary" @click="sendJDJFZCommand()">
+					Y轴升降机下降
+				</button>
+				<button class="ShouYeButton3" type="primary" @click="sendJDJTZCommand()">
+					Y轴升降机停止
+				</button>
+				<button class="ShouYeButton3" type="primary">
+					上限位状态： {{ sjjsxw?'无':'有' }}
+				</button>
+				<button class="ShouYeButton3" type="primary">
+					下限位状态： {{ sjjxxw?'无':'有' }}
+				</button>
+			</view>
+
+			<view class="CenShiIndex">
+				<button class="ShouYeButton2" type="warn">
+					传送带测试
+				</button>
+
+
+				<button class="ShouYeButton1" type="primary" @click="sendCZDDJZZCommand()">
+					开启传送带
+				</button>
+
+				<button class="ShouYeButton1" type="primary" @click="sendCZDDJTZCommand()">
+					关闭传送带
+				</button>
+			</view>
+
+			<view class="CenShiIndex">
+
+				<button class="ShouYeButton2" type="warn">
+					上侧门测试
+				</button>
+
+				<button class="ShouYeButton1" type="primary" @click="sendDJZZCommand2()">
+					关闭上侧门
+				</button>
+
+				<button class="ShouYeButton1" type="primary" @click="sendDJTZCommand2()">
+					停止上侧门
+				</button>
+
+				<button class="ShouYeButton1" type="primary" @click="sendDJFZCommand2()">
+					开启上侧门
+				</button>
+				<button class="ShouYeButton3" type="primary">
+					上限位状态： {{ scmsxw?'无':'有' }}
+				</button>
+				<button class="ShouYeButton3" type="primary">
+					下限位状态：{{ scmxxw?'无':'有' }}
+				</button>
+			</view>
+
+			<view class="CenShiIndex">
+				<!--  于洪的 -->
+				<button class="ShouYeButton2" type="warn">
+					下侧门测试
+				</button>
+
+				<button class="ShouYeButton1" type="primary" @click="sendGBXCMCommand()">
+					关闭下侧门
+				</button>
+
+				<button class="ShouYeButton1" type="primary" @click="sendTZXCMCommand()">
+					停止下侧门
+				</button>
+
+				<button class="ShouYeButton1" type="primary" @click="sendKQXCMCommand()">
+					开启下侧门
+				</button>
+			</view>
+
+
+
+			<view class="CenShiIndex">
+				<button class="ShouYeButton2" type="warn">
+					取货门测试
+				</button>
+
+				<button class="ShouYeButton1" type="primary" @click="sendCMDJZZCommand2()">
+					关闭取货门
+				</button>
+
+				<button class="ShouYeButton1" type="primary" @click="sendCMDJTZCommand2()">
+					停止取货门
+				</button>
+
+				<button class="ShouYeButton1" type="primary" @click="sendCMDJFZCommand2()">
+					开启取货门
+				</button>
+				<button class="ShouYeButton3" type="primary">
+					上限位状态： {{ qhmsxw?'无':'有' }}
+				</button>
+				<button class="ShouYeButton3" type="primary">
+					下限位状态： {{ qhmxxw?'无':'有' }}
+				</button>
+			</view>
+
+			<view class="CenShiIndex">
+				<button class="ShouYeButton2" type="warn">
+					回收门测试
+				</button>
+
+				<button class="ShouYeButton1" type="primary" @click="sendGBHSMCommand()">
+					关闭回收门
+				</button>
+
+				<button class="ShouYeButton1" type="primary" @click="sendTZHSMCommand()">
+					停止回收门
+				</button>
+
+				<button class="ShouYeButton1" type="primary" @click="sendKQHSMCommand()">
+					开启回收门
+				</button>
+			</view>
+
+
+			<view class="CenShiIndex">
+				<button class="ShouYeButton2" type="warn">
+					层数测试
+				</button>
+				<button class="ShouYeButton2" type="primary" @click="Yto11()">
+					第一层
+				</button>
+				<button class="ShouYeButton2" type="primary" @click="Yto21()">
+					第二层
+				</button>
+				<button class="ShouYeButton2" type="primary" @click="Yto31()">
+					第三层
+				</button>
+				<button class="ShouYeButton2" type="primary" @click="Yto41()">
+					第四层
+				</button>
+				<button class="ShouYeButton2" type="primary" @click="Yto51()">
+					第五层
+				</button>
+				<button class="ShouYeButton2" type="primary" @click="Yto61()">
+					第六层
+				</button>
+				<button class="ShouYeButton2" type="primary" @click="Yto71()">
+					第七层
+				</button>
+				<button class="ShouYeButton2" type="primary" @click="Yto81()">
+					第八层
+				</button>
+				<button class="ShouYeButton2" type="primary" @click="Yto9()">
+					第九层
+				</button>
+				<button class="ShouYeButton2" type="primary" @click="Yto9()">
+					取货层
+				</button>
+				<button class="ShouYeButton2" type="primary" @click="Yto9()">
+					回收层
+				</button>
+
+
+			</view>
+
+
+			<view class="CenShiIndex">
+				<button class="ShouYeButton2" type="warn">
+					流程测试
+				</button>
+
+				<button class="ShouYeButton1" type="primary" @click="sendBUFWQHMCommand()">
+					不需要复位取货门
+				</button>
+
+				<button class="ShouYeButton1" type="primary" @click="sendYAOFWQHMCommand()">
+					需要复位取货门
+				</button>
+
+				<button class="ShouYeButton1" type="primary" @click="sendKAIQHMCommand()">
+					开启取货门
+				</button>
+
+			</view>
+
+
+			<view class="CenShiIndex">
+				<button class="ShouYeButton2" type="warn">
+					滑道货物
+				</button>
+
+				<button class="ShouYeButton1" type="primary">
+					{{ hdhw?'无':'有' }}
+				</button>
+
+			</view>
+			<view class="CenShiIndex">
+				<button class="ShouYeButton2" type="warn">
+					取货口货物
+				</button>
+
+				<button class="ShouYeButton1" type="primary">
+					{{ qhkhw?'无':'有' }}
+				</button>
+
+			</view>
+
+			<view class="CenShiIndex">
+				<button class="ShouYeButton2" type="warn">
+					Y轴测试
+				</button>
+				<view class="">
+					<input class="uni-input" placeholder="Y轴测试" v-model="Yvalue" />
+				</view>
+				<button class="ShouYeButton1" type="primary" @click="toYvalue()">
+					行走
+				</button>
+			</view>
+
+		</view>
+
+
+
+
+
+		<!-- <uni-title type="h1" title="------------履带测试流程-------------"></uni-title> -->
+
+		<view class="" v-if="nowLiuCheng == 4">
+
+			<view class="CenShiIndex" v-for="(layer, index) in layers" :key="index">
+				<button class="ShouYeButton2" type="warn">
+					第{{ layer.name }}层
+				</button>
+				<button class="ShouYeButton2" type="primary" v-for="item of layer.count" :key="item"
+					@click="LvDaiSendShouHuoT(layer.index, item)">
+					货道{{ item }}
+				</button>
+			</view>
+
+		</view>
+
+
+		<view class="previews" v-if="show">
+			<view class="preview-wrap">
+				<sintrb-uvcviewer ref="iv" class="preview" :rotation="rotation" @onStatusChange="onStatusChange"
+					:deviceId="deviceId">
+				</sintrb-uvcviewer>
+			</view>
+		</view>
+		<view v-if="previewSizeList.length" style="display: flex; flex-direction: row; flex-wrap: wrap;">
+			<view :class="{selected:previewSizeI === i}" @tap="previewSizeI = i"
+				style="border: 2rpx solid #eee; padding: 5rpx;" v-for="s,i in previewSizeList">{{s.width}}x{{s.height}}
+			</view>
+		</view>
+		<view class="flex btns">
+			<button class="grow1 button" size="mini" type="default" @tap="show = !show">{{show?"关闭":"显示"}}</button>
+			<button class="grow1 button" size="mini" type="default" @tap="doIVAction('test')">测试</button>
+			<button class="grow1 button" size="mini" type="default" @tap="doIVAction('start')">开始</button>
+			<button class="grow1 button" size="mini" type="default" @tap="doIVAction('stop')">停止</button>
+			<button class="grow1 button" size="mini" type="default" @tap="getSnap()">截图</button>
+			<button class="grow1 button" size="mini" type="default" @tap="rotation = (rotation + 90) % 360">旋转</button>
+			<button class="grow1 button" size="mini" type="default" @tap="getSupportedPreviewSizes()">获取支持的尺寸</button>
+			<button class="grow1 button" size="mini" type="default" @tap="getUvcDevices()">获取USB设备列表</button>
+			<!-- <button class="button" size="mini" type="default" @tap="SnapAllDevice()">一键拍照</button> -->
+			<button class="button" size="mini" type="default" @tap="SnapDevice()">拍整个柜机</button>
+			<button class="button" size="mini" type="default" @tap="logs=[];images=[];">清空</button>
+			<!-- <button class="button" size="mini" type="default" @tap="clearChenJi()">清空层级</button> -->
+			<!-- <button class="button" size="mini" type="default" @tap="create()">单层级图片合成</button> -->
+			<!-- <button class="button" size="mini" type="default" @tap="createAll()">所有层级图片合成</button> -->
+
+		</view>
+		<view class="CenShiIndex">
+			<button class="ShouYeButton2" type="warn">
+				摄像头A的设备id
+			</button>
+			<view class="">
+				<input class="uni-input" placeholder="Y摄像头A的设备id" v-model="CameraA" />
+			</view>
+		</view>
+		<view class="CenShiIndex">
+			<button class="ShouYeButton2" type="warn">
+				摄像头B的设备id
+			</button>
+			<view class="">
+				<input class="uni-input" placeholder="Y摄像头A的设备id" v-model="CameraB" />
+			</view>
+		</view>
+
+		<button class="ShouYeButton2" type="warn">
+			拍摄图片
+		</button>
+		<scroll-view v-if="images.length" scroll-x="true" style="flex-direction: row;margin-top: 5px;">
+			<view style="display: flex;flex-direction: row;">
+				<image v-for="it,ix in images" @tap="viewImg(it,ix)" :key="it.key" :src="it.src" mode="heightFix"
+					style="max-width: 60px; height: 60px;border: 1px solid red; margin-right: 1px;"></image>
+			</view>
+		</scroll-view>
+
+		<!-- 		<button class="ShouYeButton2" type="warn">
+			单层级图片
+		</button>
+		<scroll-view v-if="hecheng_imgs.length" scroll-x="true" style="flex-direction: row;margin-top: 5px;">
+			<view style="display: flex;flex-direction: row;">
+				<image v-for="it,ix in hecheng_imgs" @tap="viewImg(it,ix)" :key="it.key" :src="it.src" mode="heightFix"
+					style="max-width: 60px; height: 60px;border: 1px solid red; margin-right: 1px;"></image>
+			</view>
+		</scroll-view> -->
+
+		<scroll-view class="logs" scroll-y="true" style="flex-direction: column;margin-top: 5px;">
+			<view style="display: flex;flex-direction: column;">
+				<view v-for="l in logs"
+					style="margin-top: 1rpx; font-size: 8px; width: auto; border: 1rpx solid #EEEEEE; padding: 10rpx;">
+					<text>{{l}}</text>
+				</view>
+			</view>
+		</scroll-view>
+
+
+		<view>
+			<button style="background-color: gold;color: black;" class='ButtonONE' @click="logout()">
+				登出app
+			</button>
+		</view>
+
+
+	</view>
+</template>
+
+<script>
+	const SPcoin = uni.requireNativePlugin('Fvv-UniSerialPort'); // 弹簧机
+
+	const CSD = uni.requireNativePlugin('Fvv-UniSerialPort2'); // 电机
+
+
+	const iuvc = uni.requireNativePlugin("sintrb-uvcmodule"); // 摄像头
+
+	export default {
+		data() {
+			return {
+				CameraA: "",
+				CameraB: "",
+				layers: [{
+						name: '一',
+						index: 1,
+						count: 11
+					}, // 第一层，11 个货道
+					{
+						name: '二',
+						index: 2,
+						count: 11
+					}, // 第二层，11 个货道
+					{
+						name: '三',
+						index: 3,
+						count: 9
+					}, // 第三层，9 个货道
+					{
+						name: '四',
+						index: 4,
+						count: 9
+					}, // 第四层，9 个货道
+					{
+						name: '五',
+						index: 5,
+						count: 12
+					}, // 第五层，12 个货道
+					{
+						name: '六',
+						index: 6,
+						count: 13
+					}, // 第六层，13 个货道
+					{
+						name: '七',
+						index: 7,
+						count: 13
+					}, // 第七层，13 个货道
+					{
+						name: '八',
+						index: 8,
+						count: 13
+					}, // 第八层，13 个货道
+					{
+						name: '九',
+						index: 9,
+						count: 13
+					}, // 第九层，13 个货道
+				],
+
+				sjjsxw: true,
+				sjjxxw: true,
+				scmsxw: true,
+				scmxxw: true,
+				qhmsxw: true,
+				qhmxxw: true,
+				hdhw: true,
+				qhkhw: true,
+
+				fileName: "left", // 保存的文件名
+
+				nowLiuCheng: 1,
+
+
+				storeId: '',
+				timer: '',
+				CashierPath: '',
+				baudRate: '9600',
+
+				RecoudText: [],
+				SendText: [],
+				RecoudTextTHJ: [],
+				SendTextTHJ: [],
+				RecoudTextTHJ2: [],
+				SendTextTHJ2: [],
+				list: [],
+				value: "/dev/ttyS7",
+				value1: "/dev/ttyS2",
+				value2: "/dev/ttyS3",
+				Yvalue: "",
+				// value: 0,
+				// value1: 7,
+				maxNumber: 0,
+				NowBox: 0,
+				NowBox2: 0,
+				alltimer2: null,
+				CWMcode: null,
+				alltimer: null,
+
+				isQuHuo: true, // 是否是取货流程，true：取货流程，false：回收流程
+
+				range: [{
+						value: 0,
+						text: "/dev/ttyS7"
+					},
+					{
+						value: 1,
+						text: "/dev/ttyS4"
+					},
+					{
+						value: 6,
+						text: "/dev/ttyS5"
+					},
+					{
+						value: 2,
+						text: "/dev/ttyS3"
+					},
+					{
+						value: 3,
+						text: "/dev/ttyS2"
+					},
+					{
+						value: 4,
+						text: "/dev/ttyS0"
+					},
+					{
+						value: 7,
+						text: "/dev/ttyS1"
+					},
+					{
+						value: 8,
+						text: "/dev/ttyS8"
+					},
+					{
+						value: 5,
+						text: "/dev/ttyFIQ0"
+					},
+				],
+
+
+
+				//  ----------------拍照数据
+
+				show: false,
+				previewSizeI: -1,
+				previewSizeList: [],
+				rotation: 0,
+				logs: [],
+				images: [],
+
+				statusListeners: [],
+				statusZouBuListeners: [],
+				nowStatus: 0,
+				devices: [],
+				deviceId: 2004,
+
+				//  ----------------合成照片
+
+
+				ani: true,
+				tab: [{
+					name: '横向'
+				}, {
+					name: '纵向'
+				}],
+				current: 0,
+
+				img: '',
+				base: '',
+				imgs: [],
+				source_imgs: [],
+				hecheng_imgs: [], // 每层合成的图片
+				hecheng_source_imgs: [], // 合成解析图片
+				canvas_style: {
+					width: '200px',
+					height: '200px'
+				},
+
+				mode: 'height',
+				max: 1000, //最大宽高 太大生成慢
+				openmax: true,
+
+				debug: false,
+
+			}
+		},
+		onShow() {
+			// this.timeup()
+		},
+		onHide() {
+			// clearInterval(this.timer);
+			// this.closePort()
+		},
+
+		beforeDestroy() {
+			this.doIVAction('stop')
+		},
+		onLoad() {
+			if (!iuvc) {
+				this.addLog("获取插件失败，请确保该Demo是在自定义基座上运行！");
+			} else {
+				this.addLog("插入UVC摄像头，点击开始后会自动获取授权确认，同意后会自动播放，如果提示没找到摄像头，可能是你的摄像头不是UVC的摄像头。");
+				this.addLog("如果点击“USB设备列表”和“UVC设备列表”都不会显示设备信息，那么可能是你的连接线有问题");
+				this.addLog("如果点击“USB设备列表”能够看到设备信息而点击“UVC设备列表”看不到，那你的设备可能不是UVC设备（DeviceClass=239，DeviceSubclass=2）");
+			}
+
+			iuvc.getUvcDevices({}, res => {
+				res.data.devices.map(dev => {
+					let ndev = JSON.parse(JSON.stringify(dev));
+					dev.showJson = false;
+					dev.showPreview = false;
+					return dev;
+				})
+
+				console.log(JSON.stringify(res))
+				this.devices = res.data.devices
+				this.addLog(res);
+				this.deviceId = this.devices[0].DeviceId
+				this.CameraA = this.devices[0].DeviceId
+				this.CameraB = this.devices[1].DeviceId
+				this.show = true
+			});
+
+		},
+		onUnload() {
+			clearInterval(this.timer);
+		},
+		mounted() {
+
+
+			this.init();
+			this.$forceUpdate()
+
+
+		},
+		watch: {
+			previewSizeI() {
+				// console.log("previewSizeI", this.previewSizeI);
+				this.addLog("previewSizeI " + this.previewSizeI);
+				// let size = this.previewSizeList[this.previewSizeI];
+				this.doIVAction("setPreviewSize", {
+					index: this.previewSizeI
+				});
+			}
+		},
+		methods: {
+
+			sendBUFWQHMCommand() {
+
+				this.SendText.push("AA1402010000000001000000000000000000A2BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA1402010000000001000000000000000000A2BB");
+			},
+			sendYAOFWQHMCommand() {
+
+				this.SendText.push("AA1402010001000001000000000000000000A2BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA1402010001000001000000000000000000A2BB");
+			},
+			sendKAIQHMCommand() {
+
+				this.SendText.push("AA1408010000001E00000000000000000000A2BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA1408010000001E00000000000000000000A2BB");
+			},
+
+
+			sendDJZZCommand2() {
+
+				this.SendText.push("AA0B0501030000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA0B0501030000000000BB");
+			},
+			sendDJTZCommand2() {
+
+				this.SendText.push("AA0B0501030200000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA0B0501030200000000BB");
+			},
+			sendDJFZCommand2() {
+
+				this.SendText.push("AA0B0501030100000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA0B0501030100000000BB");
+			},
+			sendGBXCMCommand() {
+
+				this.SendTextTHJ.push("aa070101bb");
+				if (this.SendTextTHJ.length > 10) {
+					this.SendTextTHJ.shift()
+				}
+				CSD.sendHex("aa070101bb");
+
+				// aa070201bb  // 回收门
+			},
+			sendKQXCMCommand() {
+
+				this.SendTextTHJ.push("aa070102bb");
+				if (this.SendTextTHJ.length > 10) {
+					this.SendTextTHJ.shift()
+				}
+				CSD.sendHex("aa070102bb");
+			},
+			sendTZXCMCommand() {
+
+				this.SendTextTHJ.push("aa070100bb");
+				if (this.SendTextTHJ.length > 10) {
+					this.SendTextTHJ.shift()
+				}
+				CSD.sendHex("aa070100bb");
+			},
+
+
+			sendGBHSMCommand() {
+
+				this.SendTextTHJ.push("aa070201bb");
+				if (this.SendTextTHJ.length > 10) {
+					this.SendTextTHJ.shift()
+				}
+				CSD.sendHex("aa070201bb");
+			},
+			sendTZHSMCommand() {
+
+				this.SendTextTHJ.push("aa070200bb");
+				if (this.SendTextTHJ.length > 10) {
+					this.SendTextTHJ.shift()
+				}
+				CSD.sendHex("aa070200bb");
+			},
+			sendKQHSMCommand() {
+
+				this.SendTextTHJ.push("aa070202bb");
+				if (this.SendTextTHJ.length > 10) {
+					this.SendTextTHJ.shift()
+				}
+				CSD.sendHex("aa070202bb");
+			},
+
+
+
+			sendCMDJZZCommand2() {
+
+				this.SendText.push("AA0B0501020000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA0B0501020000000000BB");
+			},
+			sendCMDJTZCommand2() {
+
+				this.SendText.push("AA0B0501020200000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA0B0501020200000000BB");
+			},
+			sendCMDJFZCommand2() {
+
+				this.SendText.push("AA0B0501020100000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA0B0501020100000000BB");
+			},
+			sendCZDDJZZCommand() {
+
+				this.SendText.push("AA0B0501040000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA0B0501040000000000BB");
+			},
+			sendCZDDJTZCommand() {
+
+				this.SendText.push("AA0B0501040200000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA0B0501040200000000BB");
+			},
+
+
+			changeCSD() {
+				// this.range.forEach(item => {
+				// 	if (this.value == item.value) {
+				// 		console.log(item);
+
+				CSD.setBaudRate(115200);
+				CSD.setStopBits(1);
+				CSD.setDataBits(8);
+				CSD.setParity(0);
+				CSD.setPath("/dev/ttyS1");
+				// CSD.setPath(this.value);
+
+
+				CSD.open(res => {
+					if (!res.status) {
+						uni.showToast({
+							title: res.msg,
+							duration: 2000,
+							icon: "none"
+						});
+						setTimeout(() => {
+							this.changeCSD()
+						}, 3000)
+						return
+					}
+					uni.showToast({
+						title: "切换电机串口成功",
+						duration: 2000,
+					});
+
+
+					/*****************************************/
+					CSD.onMessageHex(rec => {
+						console.log("rec0", rec);
+						rec = rec.toLowerCase();
+
+						this.RecoudTextTHJ.push(rec);
+						if (this.RecoudTextTHJ.length > 10) {
+							this.RecoudTextTHJ.shift()
+						}
+
+
+						// this.isFinishChuHuo = true
+						// setTimeout(() => {
+						// 	this.$refs.paySuccesspopup.close('center')
+						// }, 3000)
+
+
+					}, send => {
+						console.log("send0", send);
+					});
+					/********************************以上是侦听信息***************/
+
+				});
+				// 	}
+				// })
+				// console.log(this.value)
+
+			},
+			changeTHJ() {
+
+				// this.range.forEach(item => {
+				// 	if (this.value1 == item.value) {
+				// 		console.log(item);
+
+
+				SPcoin.setBaudRate(9600);
+				SPcoin.setStopBits(1);
+				SPcoin.setDataBits(8);
+				SPcoin.setParity(0);
+				SPcoin.setPath("/dev/ttyS4");
+				// SPcoin.setPath(this.value1);
+
+				SPcoin.open(res => {
+					if (!res.status) {
+						uni.showToast({
+							title: res.msg,
+							duration: 2000,
+							icon: "none"
+						});
+						setTimeout(() => {
+							this.changeTHJ()
+						}, 3000)
+						return
+					}
+					uni.showToast({
+						title: "切换弹簧机串口成功",
+						duration: 2000,
+					});
+
+
+					/*****************************************/
+					SPcoin.onMessageHex(rec => {
+						console.log("rec0", rec);
+						let str = rec.toLowerCase();
+
+
+						this.RecoudText.push(str);
+						if (this.RecoudText.length > 10) {
+							this.RecoudText.shift()
+						}
+
+						if (str.indexOf("aa2404ee") !== -1) {
+
+							let str1 = str.slice(9, 10); // 升降机上限位
+							this.sjjxxw = str1 == '1' ? true : false
+
+							let str2 = str.slice(11, 12); // 升降机下限位
+							this.sjjsxw = str2 == '1' ? true : false
+
+							let str3 = str.slice(31, 32); // 取货口
+							this.qhkhw = str3 == '1' ? true : false
+
+							let str4 = str.slice(33, 34); // 滑道口
+							this.hdhw = str4 == '1' ? true : false
+
+						}
+
+
+						if (str.indexOf("aa1002020001") !== -1) {
+							// 触发所有监听器
+							this.statusZouBuListeners.forEach(listener => listener(1));
+						}
+
+
+						if (str.indexOf("aa100102") !== -1) {
+							// 出货成功响应帧
+
+							if (this.isQuHuo) { // 如果现在是取货流程，则接着发传送带启动指令
+
+								SPcoin.sendHex("AA140C010000000001000000000000000000A2BB");
+							} else {
+								// 现在是回收口出货流程，发送传送带启动指令
+								// SPcoin.sendHex("AA140C010003000001000000000000000000A2BB");
+								SPcoin.sendHex("AA140C010003000001000000000000000000A2BB");
+
+
+								setTimeout(() => {
+									// 停止传送带指令
+
+									SPcoin.sendHex("AA0B0501040200000000BB");
+
+
+									CSD.sendHex("aa070101bb");
+
+									setTimeout(() => {
+
+										CSD.sendHex("aa070100bb");
+									}, 4000)
+
+								}, 5000)
+							}
+
+						}
+
+						if (str.indexOf("aa100c02") !== -1) {
+							// 启动传动出货成功响应帧
+
+							if (this.isQuHuo) { // 如果现在是取货流程，则接着发开启取货门指令
+
+								SPcoin.sendHex("AA1408010000001E00000000000000000000A2BB");
+							} else { // 现在是回收口出货流程，发送电机反传4秒
+								// CSD.sendHex("aa070101bb");
+
+								// setTimeout(() => {
+
+								// 	CSD.sendHex("aa070100bb");
+								// }, 4000)
+
+							}
+
+						}
+
+						if (str.indexOf("AA0B0C01FFFFFFFF0100BBAA100C03") !== -1) {
+
+							// let list1 = str.split("AA0B0C01FFFFFFFF0100BBAA100C03");
+							// list1[0]
+							let str1 = str.slice(30, 32);
+							this.CWMcode = this.getStatusMessage(str1)
+
+
+						}
+
+
+
+
+					}, send => {
+						console.log("send0", send);
+					});
+					/********************************以上是侦听信息***************/
+
+				});
+
+				// 	}
+				// })
+				// console.log(this.value1)
+			},
+			getStatusMessage(code) {
+				const statusMap = {
+					"00": "正常",
+					"01": "下发货道参数异常",
+					"02": "掉货检测异常，接货斗有货",
+					"03": "出货口检测异常，有货",
+					"04": "超时未到达出货层",
+					"05": "上升上限传感器异常",
+					"06": "货道出货掉货检测未检测到有货掉落",
+					"07": "掉货检测异常，货物没有掉落",
+					"08": "超时未到达出货口",
+					"09": "上升上限传感器异常",
+					"0A": "侧门开门失败",
+					"0B": "出货口未检测到有货到达，超时",
+					"0C": "出货口未检测到有货到达，超时",
+					"0D": "侧门关门失败",
+					"0E": "侧门关门超时，失败",
+					"0F": "下降复位超时",
+					"10": "下降复位超时",
+					"11": "取货门开门失败",
+					"13": "取货口还有货，未取走",
+					"14": "取货门关门超时，失败",
+					"15": "侧门复位失败",
+					"16": "下降复位超时",
+					"19": "初始化 掉货检测异常，接货斗有货",
+					"1A": "初始化 出货口检测异常，有货"
+				};
+
+				return statusMap[code] || "未知错误码";
+			},
+
+			sendGYCommand() {
+				this.SendText.push("AA0B0400000000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA0B0400000000000000BB");
+
+			},
+
+			sendJDJZZCommand() {
+
+				this.SendText.push("AA0B0501000000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA0B0501000000000000BB");
+
+			},
+			sendJDJFZCommand() {
+
+				this.SendText.push("AA0B0501000100000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA0B0501000100000000BB");
+
+			},
+			sendJDJTZCommand() {
+
+				this.SendText.push("AA0B0501000200000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA0B0501000200000000BB");
+
+			},
+			Yto1() {
+				this.SendText.push("AA130301000000000100023e380000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA130301000000000100023e380000000000BB");
+			},
+			Yto2() {
+				this.SendText.push("AA13030100000000010001e4600000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA13030100000000010001e4600000000000BB");
+			},
+			Yto3() {
+				this.SendText.push("AA1303010000000001000182b80000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA1303010000000001000182b80000000000BB");
+			},
+
+			Yto4() {
+				this.SendText.push("AA1303010000000001000124f80000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA1303010000000001000124f80000000000BB");
+			},
+			Yto5() {
+				this.SendText.push("AA13030100000000010000e2900000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA13030100000000010000e2900000000000BB");
+			},
+			Yto6() {
+				this.SendText.push("AA13030100000000010000afc80000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA13030100000000010000afc80000000000BB");
+			},
+			Yto7() {
+				this.SendText.push("AA1303010000000001000075300000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA1303010000000001000075300000000000BB");
+			},
+			Yto8() {
+				this.SendText.push("AA130301000000000100003a980000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA130301000000000100003a980000000000BB");
+			},
+			Yto9() {
+				this.SendText.push("AA1303010000000001000000000000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA1303010000000001000000000000000000BB");
+			},
+			Yto11() {
+				this.SendText.push("AA130301000700000100023e380000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA130301000700000100023e380000000000BB");
+			},
+			Yto21() {
+				this.SendText.push("AA13030100070000010001e4600000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA13030100070000010001e4600000000000BB");
+			},
+			Yto31() {
+				this.SendText.push("AA1303010007000001000182b80000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA1303010007000001000182b80000000000BB");
+			},
+
+			Yto41() {
+				this.SendText.push("AA1303010007000001000124f80000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA1303010007000001000124f80000000000BB");
+			},
+			Yto51() {
+				this.SendText.push("AA13030100070000010000e2900000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA13030100070000010000e2900000000000BB");
+			},
+			Yto61() {
+				this.SendText.push("AA13030100070000010000afc80000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA13030100070000010000afc80000000000BB");
+			},
+			Yto71() {
+				this.SendText.push("AA1303010007000001000075300000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA1303010007000001000075300000000000BB");
+			},
+			Yto81() {
+				this.SendText.push("AA130301000700000100003a980000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA130301000700000100003a980000000000BB");
+			},
+			Yto91() {
+				this.SendText.push("AA1303010007000001000000000000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA1303010007000001000000000000000000BB");
+			},
+			toYvalue() {
+				let str = this.generateStepString(this.Yvalue)
+				this.SendText.push(str);
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex(str);
+			},
+			generateStepString(step) {
+				console.log(step);
+				// 将步数转换为 4 字节的十六进制字符串，并去掉前缀 '0x'
+				const hexStep = Number(step).toString(16).padStart(8, '0'); // 确保是 8 位十六进制
+				console.log(hexStep);
+
+				// 原始字符串
+				const originalString = "AA1303010000000001000000000000000000BB";
+
+				// 替换从第 18 个字符开始的 8 个字符（即 01 后面的 6 个数字）
+				const resultString = originalString.slice(0, 18) + hexStep + originalString.slice(26);
+
+				return resultString;
+			},
+			init() {
+				this.changeCSD()
+				setTimeout(() => {
+
+					this.changeTHJ()
+				}, 1000)
+
+			},
+
+			logout() {
+				clearInterval(this.timer);
+
+				let main = plus.android.runtimeMainActivity();
+				//为了防止快速点按返回键导致程序退出重写quit方法改为隐藏至后台  
+				// plus.runtime.quit = function() {
+				main.moveTaskToBack(false);
+
+				try {
+					this.stopServiceIntent()
+				} catch (e) {
+					//TODO handle the exception
+				}
+
+			},
+			snapshot() {
+				clearInterval(this.timer);
+
+				uni.navigateTo({
+					url: "/pages/Camera/Camera",
+					animationType: "slide-in-left",
+				})
+			},
+			toCanvas() {
+				clearInterval(this.timer);
+				uni.navigateTo({
+					url: "/pages/canvasTest/canvasTest",
+					animationType: "slide-in-left",
+				})
+			},
+			toCanvas2() {
+				clearInterval(this.timer);
+				uni.navigateTo({
+					url: "/pages/canvasTest2/canvasTest2",
+					animationType: "slide-in-left",
+				})
+			},
+			toCanvas3() {
+				clearInterval(this.timer);
+				uni.navigateTo({
+					url: "/pages/canvasTest3/canvasTest3",
+					animationType: "slide-in-left",
+				})
+			},
+			snapshot2() {
+				clearInterval(this.timer);
+				uni.navigateTo({
+					url: "/pages/NewCamera/index",
+					animationType: "slide-in-left",
+				})
+			},
+
+			// -----------取货-----------------
+			initShouHuo(i) { // 取货流程
+				this.isQuHuo = true
+
+				console.log(i);
+				let str = "AA14010100020000" + (Number(i)).toString(16).padStart(2, '0') + "000000000000000000A2BB";
+
+				console.log(str);
+				this.SendText.push(str);
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+
+				SPcoin.sendHex(str);
+
+			},
+
+			async SendShouHuoT(layer, item) {
+				let prefix;
+				layer -= 1;
+				if (item > 10) {
+					prefix = `${layer+10}${item % 10}`;
+				} else if (item === 10) {
+					prefix = `${layer + 1}${item % 10}`;
+				} else {
+					prefix = `${layer}${item % 10}`;
+				}
+				console.log(prefix);
+				this.initShouHuo(prefix);
+			},
+
+
+
+			// ------------回收流程------------------
+
+
+
+			initShouHuo2(i) { // 回收口出货流程
+				this.isQuHuo = false
+
+				console.log(i);
+
+				let str = "AA14010100030000" + (Number(i)).toString(16).padStart(2, '0') + "000000000000000000A2BB";
+
+				console.log(str);
+				this.SendText.push(str);
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+
+				CSD.sendHex("aa070102bb"); // ETC主板），发下侧门开门指令
+				setTimeout(() => {
+
+					CSD.sendHex("aa070100bb");
+				}, 4000)
+
+				SPcoin.sendHex(str);
+			},
+			async HuiShouSendShouHuoT(layer, item) {
+				let prefix;
+				layer -= 1;
+				if (item > 10) {
+					prefix = `${layer+10}${item % 10}`;
+				} else if (item === 10) {
+					prefix = `${layer + 1}${item % 10}`;
+				} else {
+					prefix = `${layer}${item % 10}`;
+				}
+				console.log(prefix);
+				this.initShouHuo2(prefix);
+			},
+
+
+			// ------------履带测试流程------------------
+
+
+
+			initShouHuo3(i) { // 履带测试流程
+
+				console.log(i);
+
+				let str = "AA140A0100010000" + (Number(i)).toString(16).padStart(2, '0') + "000000000000000000A2BB";
+
+				console.log(str);
+				this.SendText.push(str);
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+
+				SPcoin.sendHex(str);
+			},
+
+			async LvDaiSendShouHuoT(layer, item) {
+				let prefix;
+				layer -= 1;
+				if (item > 10) {
+					prefix = `${layer+10}${item % 10}`;
+				} else if (item === 10) {
+					prefix = `${layer + 1}${item % 10}`;
+				} else {
+					prefix = `${layer}${item % 10}`;
+				}
+				console.log(prefix);
+				this.initShouHuo3(prefix);
+			},
+
+
+
+
+			// -------------拍照预览-----------------------
+
+
+
+			getUvcDevices() {
+				iuvc.getUvcDevices({}, res => {
+					res.data.devices.map(dev => {
+						let ndev = JSON.parse(JSON.stringify(dev));
+						dev.showJson = false;
+						dev.showPreview = false;
+						return dev;
+					})
+
+					console.log(JSON.stringify(res))
+					this.devices = res.data.devices
+					this.addLog(res);
+					this.deviceId = this.devices[0].DeviceId
+				});
+			},
+			getSupportedPreviewSizes() {
+				this.doIVAction("getSupportedPreviewSizes", null, res => {
+					if (res && res.data) {
+						this.previewSizeList = res.data.items;
+					}
+				})
+			},
+			getSnap2() {
+
+				// let imgs = []
+				// this.source_imgs = []
+
+				this.doIVAction("snap", {}, res => {
+					this.addLog(res);
+					if (res && res.data) {
+						this.addImg(res.data.path);
+
+						//保存到本地
+						uni.saveFile({
+							tempFilePath: res.data.path, //文件的临时路径
+							success: function(res) {
+
+							},
+							fail: function(err) {}
+						});
+
+					}
+				})
+			},
+			async getSnap() {
+				let retryCount = 0;
+				const maxRetries = 4; // 最大重试次数
+				let isSuccess = false;
+
+				while (!isSuccess && retryCount < maxRetries) {
+					retryCount++;
+					try {
+						await new Promise((resolve, reject) => {
+							this.doIVAction("snap", {}, async (res) => {
+								this.addLog(res);
+
+								if (res && res.data) {
+									if (res.code == 0) { // 截图成功
+										isSuccess = true;
+										this.addImg(res.data.path);
+
+
+
+										resolve();
+
+									} else {
+										this.addLog(`拍照失败，状态码不为0`);
+										reject('拍照失败，状态码不为0');
+									}
+								} else {
+									this.addLog(`拍照失败，返回数据无效`);
+									reject('拍照失败，返回数据无效');
+								}
+							});
+						});
+					} catch (error) {
+						this.addLog(`拍照失败，重试中... (${retryCount}/${maxRetries})`);
+						console.error(`拍照失败，重试中... (${retryCount}/${maxRetries})`, error);
+					}
+				}
+
+				if (!isSuccess) {
+					this.addLog('拍照失败，已达到最大重试次数');
+
+					this.show = false;
+					this.show = true;
+					this.doIVAction('stop');
+					this.doIVAction('start');
+					await this.getSnap();
+
+					// throw new Error('拍照失败，已达到最大重试次数');
+				}
+			},
+			async doIVAction(action, options, cbk) {
+				let iv = this.$refs.iv;
+				if (!iv) {
+					this.res = "没有iv " + Object.keys(this.$refs).join(",")
+					return;
+				}
+				let func = iv[action];
+				if (!func) {
+					this.addLog("没有iv." + action + " " + Object.keys(iv).join(","));
+					return;
+				}
+				// this.res = 'R ' + action + ' : ' + func;
+				let args = [];
+				if (options) {
+					args.push(options);
+				}
+				args.push(res => {
+					this.addLog(res);
+					if (cbk) {
+						cbk(res);
+					}
+				})
+				this.res = args;
+				try {
+					func.apply(iv, args);
+				} catch (e) {
+					this.addLog("ERR " + e);
+				}
+			},
+			onStatusChange(e) {
+				this.addLog(e.detail);
+
+				if (e.detail.status === 5100 && !this.previewSizeList.length) {
+					// 预览成功，获取分辨率
+					this.getSupportedPreviewSizes()
+				}
+
+				// 触发所有监听器
+				this.statusListeners.forEach(listener => listener(e.detail));
+
+				this.nowStatus = e.detail.status
+
+			},
+			addLog(l) {
+				if (typeof(l) !== "string") {
+					l = JSON.stringify(l);
+				}
+
+				if (this.logs.length > 20)
+					this.logs = []
+				this.logs.unshift(l);
+			},
+			viewImg(it, ix) {
+				uni.previewImage({
+					urls: this.images.map(r => r.src),
+					index: ix,
+				})
+			},
+			select(tempFilePaths) {
+				// this.showXuanZe = true
+				// return new Promise((resolve, reject) => {
+
+				// uni.showLoading({
+				// 	title: '上传中'
+				// });
+				// const tempFilePaths = e.tempFilePaths; //e是获取的图片源
+				uni.uploadFile({
+					url: 'https://thjindex.wteam.club/common/uploadFile', //上传图片的后端接口
+					filePath: tempFilePaths,
+					name: 'file',
+					success: res => {
+						uni.hideLoading();
+						console.log(res);
+						let imageUrl = JSON.parse(res.data).urls
+
+
+						this.images.splice(0, 0, {
+							src: imageUrl,
+							key: Date.now(),
+						})
+
+						resolve();
+
+						// this.form.imageUrl = this.form.imageUrl.slice(0, -1)
+						// console.log(this.form.imageUrl);
+						// this.ISselect = false
+					},
+					fail() {
+						reject('timeout');
+						uni.hideLoading();
+					}
+				})
+
+				// });
+
+
+
+			},
+
+			addImg(img) {
+				if (this.images.length > 10)
+					this.images = []
+
+				this.images.splice(0, 0, {
+					src: img,
+					key: Date.now(),
+				})
+
+				this.addLog(img);
+			},
+			clearChenJi() {
+				this.source_imgs = []
+			},
+			async SnapDevice() {
+
+				this.Yto9()
+
+				for (let i = 1; i <= 4; i++) {
+
+
+					if (i == 2) {
+
+						this.Yto61()
+						// await new Promise((resolve) => setTimeout(resolve,
+						// 	6000)); // 等待1秒后再下一步
+					}
+					if (i == 3) {
+						this.Yto41()
+						// await new Promise((resolve) => setTimeout(resolve,
+						// 	7000)); // 等待1秒后再下一步
+					}
+					if (i == 4) {
+						this.Yto21()
+						// await new Promise((resolve) => setTimeout(resolve,
+						// 	7000)); // 等待1秒后再下一步
+					}
+
+					await new Promise((resolve, reject) => {
+						const timeoutTimer1 = setInterval(() => {
+
+							this.removeZouBuStatusListener(statusHandler1);
+							resolve();
+						}, 35000);
+
+						// 状态监听处理
+						const statusHandler1 = (e) => {
+							clearInterval(timeoutTimer1)
+							console.log(e);
+							// if (e.status === 5100) {
+							this.removeZouBuStatusListener(statusHandler1);
+							resolve();
+							// }
+						};
+						// 注册状态监听
+						this.addZouBuStatusListener(statusHandler1);
+					});
+
+					// if (i == 5) {
+					// 	this.Yto31()
+					// 	await new Promise((resolve) => setTimeout(resolve,
+					// 		5000)); // 等待1秒后再下一步
+					// }
+					// if (i == 6) {
+					// 	this.Yto21()
+					// 	await new Promise((resolve) => setTimeout(resolve,
+					// 		5000)); // 等待1秒后再下一步
+					// }
+					// if (i == 7) {
+					// 	this.Yto11()
+					// 	await new Promise((resolve) => setTimeout(resolve,
+					// 		5000)); // 等待1秒后再下一步
+					// }
+					this.fileName = "left" + i
+
+					// 根据奇偶次决定起始摄像头
+					const deviceList = i % 2 ? [this.CameraA, this.CameraB] : [this.CameraB, this.CameraA];
+
+					// 遍历设备列表
+					for (const device of deviceList) {
+						// if (device.DeviceId == 1004)
+						// 	continue
+
+
+
+						// 将当前设备的DeviceId赋值给this.deviceId
+
+						this.addLog(device);
+						let previewSuccess = false;
+						while (!previewSuccess) {
+							this.addLog("--------" + device);
+							// 检查当前组件的deviceId是否已经是this.deviceId
+							if (this.deviceId === device) {
+								// 如果deviceId相同，检查当前状态是否为5100
+								if (this.nowStatus === 5100) {
+									this.addLog(111);
+									previewSuccess = true;
+									await new Promise((resolve) => setTimeout(resolve,
+										500)); // 等待1秒后再下一步
+									await this.getSnap(); // 直接调用拍照逻辑
+									await new Promise((resolve) => setTimeout(resolve,
+										500)); // 等待1秒后再下一步
+
+									break; // 跳出while循环，继续下一个设备
+								}
+								// else {
+								// 	// 如果不是5100，等待状态更新
+								// 	await new Promise((resolve) => setTimeout(resolve, 1000)); // 等待1秒后重试
+								// 	continue;
+								// }
+							} else {
+								this.deviceId = device;
+							}
+
+							// 如果deviceId不同，触发组件重新加载
+							this.show = false;
+							this.show = true;
+							this.addLog(2222);
+							// 等待状态5100或超时
+							try {
+								await new Promise((resolve, reject) => {
+									// 设置10秒超时
+									const timeoutTimer = setInterval(() => {
+										console.log(3333);
+										this.addLog("预览超时");
+										// this.removeStatusListener(statusHandler);
+										this.show = false;
+										this.show = true;
+										this.doIVAction('stop');
+										this.doIVAction('start');
+										// reject('timeout'); // 抛出超时异常s
+
+
+									}, 35000);
+
+									// 状态监听处理
+									const statusHandler = (e) => {
+										console.log(e);
+										if (e.status === 5100) {
+											clearInterval(timeoutTimer)
+											// clearTimeout(timeoutTimer);
+											this.removeStatusListener(statusHandler);
+											resolve();
+											previewSuccess = true;
+										}
+									};
+
+									// 注册状态监听
+									this.addStatusListener(statusHandler);
+								});
+
+								await new Promise((resolve) => setTimeout(resolve,
+									500)); // 等待1秒后再下一步
+								// 状态5100确认后拍照上传
+								await this.getSnap(); // 需确保getSnap返回Promise
+
+								await new Promise((resolve) => setTimeout(resolve, 500)); // 等待1秒后再下一步
+
+							} catch (error) {
+								// 超时后自动进入下一轮循环重新加载
+							}
+						}
+
+
+						this.fileName = "right" + i
+					}
+
+					if (i == 4) {
+						await new Promise((resolve) => setTimeout(resolve, 3000)); // 等待1秒后再下一步
+						this.Yto9()
+					}
+
+				}
+
+
+
+
+				// });
+			},
+
+			async SnapAllDevice() {
+				// 遍历设备列表
+
+				iuvc.getUvcDevices({}, async res => {
+					res.data.devices.map(dev => {
+						let ndev = JSON.parse(JSON.stringify(dev));
+						dev.showJson = false;
+						dev.showPreview = false;
+						return dev;
+					})
+
+					console.log(JSON.stringify(res))
+					this.devices = res.data.devices
+
+					this.addLog(res);
+
+
+					// 遍历设备列表
+					for (const device of this.devices) {
+						if (device.DeviceId == 1004)
+							continue
+
+
+
+						// 将当前设备的DeviceId赋值给this.deviceId
+
+						console.log(device);
+						let previewSuccess = false;
+						while (!previewSuccess) {
+							console.log("--------" + device.DeviceId);
+							// 检查当前组件的deviceId是否已经是this.deviceId
+							if (this.deviceId === device.DeviceId) {
+								// 如果deviceId相同，检查当前状态是否为5100
+								if (this.nowStatus === 5100) {
+									console.log(111);
+									previewSuccess = true;
+									await this.getSnap(); // 直接调用拍照逻辑
+									await new Promise((resolve) => setTimeout(resolve, 1000)); // 等待1秒后再下一步
+
+									break; // 跳出while循环，继续下一个设备
+								}
+								// else {
+								// 	// 如果不是5100，等待状态更新
+								// 	await new Promise((resolve) => setTimeout(resolve, 1000)); // 等待1秒后重试
+								// 	continue;
+								// }
+							} else {
+								this.deviceId = device.DeviceId;
+							}
+
+							// 如果deviceId不同，触发组件重新加载
+							this.show = false;
+							this.show = true;
+							console.log(2222);
+							// 等待状态5100或超时
+							try {
+								await new Promise((resolve, reject) => {
+									// 设置10秒超时
+									const timeoutTimer = setTimeout(() => {
+										console.log(3333);
+										this.removeStatusListener(statusHandler);
+										this.show = false;
+										this.show = true;
+										reject('timeout'); // 抛出超时异常
+
+
+									}, 15000);
+
+									// 状态监听处理
+									const statusHandler = (e) => {
+										console.log(e);
+										if (e.status === 5100) {
+											clearTimeout(timeoutTimer);
+											this.removeStatusListener(statusHandler);
+											resolve();
+											previewSuccess = true;
+										}
+									};
+
+									// 注册状态监听
+									this.addStatusListener(statusHandler);
+								});
+
+								// 状态5100确认后拍照上传
+								await this.getSnap(); // 需确保getSnap返回Promise
+
+								await new Promise((resolve) => setTimeout(resolve, 1000)); // 等待1秒后再下一步
+
+							} catch (error) {
+								// 超时后自动进入下一轮循环重新加载
+							}
+						}
+					}
+				});
+			},
+
+
+			// 在组件中需实现的状态监听器管理
+			addStatusListener(listener) {
+				this.statusListeners.push(listener);
+			},
+
+			removeStatusListener(listener) {
+				this.statusListeners = this.statusListeners.filter(l => l !== listener);
+			},
+
+			// 在组件中需实现的状态监听器管理
+			addZouBuStatusListener(listener) {
+				this.statusZouBuListeners.push(listener);
+			},
+
+			removeZouBuStatusListener(listener) {
+				this.statusZouBuListeners = this.statusZouBuListeners.filter(l => l !== listener);
+			},
+
+
+
+			// --------------图片合成------------------
+
+
+
+			toast(t) {
+				uni.showToast({
+					title: t,
+					icon: 'none'
+				})
+			},
+			uploadImg() {
+				let imgs = []
+				this.source_imgs = []
+				let that = this
+				uni.chooseImage({
+					count: 9,
+					success(e) {
+						for (let d of e.tempFilePaths) {
+							uni.getImageInfo({
+								src: d,
+								success(e) {
+									imgs.push({
+										width: e.width,
+										height: e.height,
+										path: e.path
+									})
+									that.source_imgs = JSON.parse(JSON.stringify(imgs))
+									that.with_height(imgs)
+								}
+							})
+						}
+					}
+				})
+			},
+			saveimg(url, tip = true) {
+				let platform = uni.getSystemInfoSync().uniPlatform
+				if (platform == 'web') {
+					function downloadH5(base64) {
+						var arr = base64.split(",");
+						var bytes = atob(arr[1]);
+						var ab = new ArrayBuffer(bytes.length);
+						var ia = new Uint8Array(ab);
+						for (var i = 0; i < bytes.length; i++) {
+							ia[i] = bytes.charCodeAt(i);
+						}
+						var blob = new Blob([ab], {
+							type: "application/octet-stream"
+						});
+						var url = URL.createObjectURL(blob);
+						var a = document.createElement("a");
+						a.href = url;
+						a.download = new Date().valueOf() + ".png";
+						var e = document.createEvent("MouseEvents");
+						e.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+						a.dispatchEvent(e);
+						URL.revokeObjectURL(url);
+						if (tip) {
+							uni.showToast({
+								title: "下载完成",
+								icon: "none"
+							});
+						}
+
+					}
+					return downloadH5(url)
+				}
+
+				if (platform == 'mp-weixin') {
+					uni.saveImageToPhotosAlbum({
+						filePath: url,
+						success() {
+							if (tip) {
+								uni.showToast({
+									title: "已保存 请至相册查看",
+									icon: "none"
+								});
+								uni.vibrateShort({});
+							}
+
+						},
+						fail(res) {
+							if (res.errMsg.indexOf("fail") && res.errMsg.indexOf("cancel") == -1) {
+								uni.showModal({
+									title: "您需要授权相册才可以保存~",
+									success(res) {
+										if (res.confirm) {
+											uni.openSetting();
+										}
+									}
+								});
+							}
+						}
+					});
+				}
+			},
+			switchchange(e) {
+				this.openmax = e.detail.value
+				if (this.openmax) {
+					this.toast('生成速度😃 文件大小🤣')
+				} else {
+					this.toast('生成速度😞 文件大小😓')
+				}
+			},
+			taptab(i) {
+				this.current = i
+				if (i == 0) this.mode = 'height'
+				if (i == 1) this.mode = 'width'
+
+				this.with_height(this.imgs)
+
+				if (!this.imgs.length) {
+					this.ani = false
+					this.$nextTick(() => {
+						this.ani = true
+					})
+				}
+			},
+			changemode() {
+				if (this.mode === 'width') {
+					this.mode = 'height'
+				} else {
+					this.mode = 'width'
+				}
+				this.toast(this.mode)
+			},
+			delimg(i) {
+				let that = this
+				uni.showModal({
+					title: '是否移除该图片',
+					success(e) {
+						if (e.confirm) {
+							that.imgs.splice(i, 1)
+							that.source_imgs.splice(i, 1)
+						}
+					}
+				})
+			},
+			showimg(img) {
+				uni.previewImage({
+					urls: [img]
+				})
+			},
+			create() {
+				// if (!this.imgs || !this.imgs.length) {
+				// 	this.toast('请选择图片')
+				// 	return
+				// }
+				this.mode == 'height'
+				let new_image_sizes = JSON.parse(JSON.stringify(this.source_imgs))
+				let image_sizes = this.with_height(new_image_sizes)
+				this.create_canvas2(image_sizes)
+			},
+			createAll() {
+				// if (!this.imgs || !this.imgs.length) {
+				// 	this.toast('请选择图片')
+				// 	return
+				// }
+				this.mode = 'width'
+				let new_image_sizes = JSON.parse(JSON.stringify(this.hecheng_source_imgs))
+				let image_sizes = this.with_height(new_image_sizes)
+				this.create_canvas2(image_sizes)
+			},
+			with_height(imgs) {
+				if (!imgs.length) return
+				let scale = 1
+				if (this.mode == 'width') {
+					let width = imgs[0].width
+					let height_sum = imgs[0].height
+
+					if (width > this.max && this.openmax) {
+						scale = this.max / width
+						width = this.max
+						imgs[0].width = width
+						height_sum = scale * imgs[0].height
+						imgs[0].height = height_sum
+					}
+
+					for (let i in imgs) {
+						if (i == 0) continue;
+						scale = width / imgs[i].width
+						let _h = scale * imgs[i].height
+						imgs[i].width = scale * imgs[i].width
+						imgs[i].height = _h
+						height_sum += _h
+					}
+					this.imgs = imgs
+					return {
+						data: imgs,
+						sum: height_sum,
+						width: width
+					}
+				}
+
+				//height
+				let height = imgs[0].height
+				let width_sum = imgs[0].width
+
+				if (height > this.max && this.openmax) {
+					scale = this.max / height
+					height = this.max
+					imgs[0].height = height
+					width_sum = scale * imgs[0].width
+					imgs[0].width = width_sum
+				}
+
+				for (let i in imgs) {
+					if (i == 0) continue;
+					let scale = height / imgs[i].height
+					let _w = scale * imgs[i].width
+					imgs[i].height = scale * imgs[i].height
+					imgs[i].width = _w
+					width_sum += _w
+				}
+				this.imgs = imgs
+				return {
+					data: imgs,
+					sum: width_sum,
+					height: height
+				}
+			},
+			create_canvas(image_sizes) {
+				let that = this
+				//width 竖向排列
+				if (this.mode == 'width') {
+					this.canvas_style = {
+						width: image_sizes.width + 'px',
+						height: image_sizes.sum + 'px'
+					}
+				}
+				//height 横向
+				if (this.mode == 'height') {
+					this.canvas_style = {
+						width: image_sizes.sum + 'px',
+						height: image_sizes.height + 'px'
+					}
+				}
+				// uni.showLoading({
+				// 	title: '生成中..',
+				// 	mask: true
+				// })
+				this.$nextTick(() => {
+					setTimeout(() => {
+						let ctx = uni.createCanvasContext('canid')
+
+						if (this.mode == 'width') {
+							let y = 0
+							for (let i in image_sizes.data) {
+								if (i > 0) {
+									y += image_sizes.data[i - 1].height
+								}
+								ctx.drawImage(image_sizes.data[i].path, 0, y, image_sizes.data[i].width,
+									image_sizes.data[i].height)
+							}
+						}
+						if (this.mode == 'height') {
+							let x = 0
+							for (let i in image_sizes.data) {
+								if (i > 0) {
+									x += image_sizes.data[i - 1].width
+								}
+								ctx.drawImage(image_sizes.data[i].path, x, 0, image_sizes.data[i].width,
+									image_sizes.data[i].height)
+							}
+						}
+
+						ctx.draw(false, (e) => {
+							uni.canvasToTempFilePath({
+								canvasId: 'canid',
+								success(e) {
+									that.addLog(JSON.stringify(e));
+									console.log(e);
+									uni.hideLoading()
+									that.toast('生成成功')
+									that.img = e.tempFilePath
+
+
+								},
+								fail(e) {
+									that.addLog(JSON.stringify(e));
+									console.log(e);
+									uni.hideLoading()
+									uni.showModal({
+										title: '生成失败',
+										content: JSON.stringify(e)
+									})
+								}
+							})
+						})
+					}, 90)
+
+
+				})
+
+
+			},
+
+			create_canvas2(image_sizes) {
+				const that = this;
+
+				// 设置 canvas 的宽高
+				if (this.mode === 'width') {
+					this.canvas_style = {
+						width: image_sizes.width + 'px',
+						height: image_sizes.sum + 'px',
+					};
+				} else if (this.mode === 'height') {
+					this.canvas_style = {
+						width: image_sizes.sum + 'px',
+						height: image_sizes.height + 'px',
+					};
+				}
+
+				that.addLog("-----");
+				// 等待 DOM 更新
+				this.$nextTick(() => {
+					that.addLog("-----");
+					// 获取 canvas 上下文
+					const ctx = uni.createCanvasContext('canid', this);
+
+					that.addLog("====");
+					if (this.mode === 'width') {
+						let y = 0;
+						for (let i in image_sizes.data) {
+							if (i > 0) {
+								y += image_sizes.data[i - 1].height;
+							}
+							ctx.drawImage(
+								image_sizes.data[i].path,
+								0,
+								y,
+								image_sizes.data[i].width,
+								image_sizes.data[i].height
+							);
+						}
+					} else if (this.mode === 'height') {
+						let x = 0;
+						for (let i in image_sizes.data) {
+							if (i > 0) {
+								x += image_sizes.data[i - 1].width;
+							}
+							ctx.drawImage(
+								image_sizes.data[i].path,
+								x,
+								0,
+								image_sizes.data[i].width,
+								image_sizes.data[i].height
+							);
+						}
+					}
+
+					that.addLog("-----");
+					// 绘制完成
+					ctx.draw(false, () => {
+						that.addLog("====");
+						// 将 canvas 内容保存为临时文件
+						uni.canvasToTempFilePath({
+								canvasId: 'canid',
+								success: (res) => {
+									that.addLog(JSON.stringify(res));
+									console.log('生成成功', res.tempFilePath);
+									uni.hideLoading();
+									that.toast('生成成功');
+									that.img = res.tempFilePath;
+
+
+									// 将生成的图片插入到数组中
+									that.hecheng_imgs.splice(0, 0, {
+										src: res.tempFilePath,
+										key: Date.now(),
+									});
+									console.log("--------------");
+									uni.getImageInfo({ // 解析路径
+										src: res.tempFilePath,
+										success(e1) {
+											console.log(e1);
+											that.hecheng_source_imgs.push({
+												width: e1.width,
+												height: e1.height,
+												path: e1.path
+											})
+										}
+									})
+
+								},
+								fail: (err) => {
+									that.addLog(JSON.stringify(err));
+									console.error('生成失败', err);
+									uni.hideLoading();
+									uni.showModal({
+										title: '生成失败',
+										content: JSON.stringify(err),
+									});
+								},
+							},
+							this
+						);
+					});
+				});
+			},
+
+
+		}
+	}
+</script>
+
+<style lang="scss">
+	.CenShiIndex {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px;
+		flex-direction: row;
+		justify-content: flex-start;
+		padding-left: 5px;
+		align-items: center;
+
+		.ShouYeButton {
+			padding: 3px !important;
+			min-width: 90px;
+			height: 100px;
+			font-size: 20px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin-bottom: 10rpx;
+			margin-left: 3px;
+		}
+
+		.ShouYeButton2 {
+			padding: 3px !important;
+			min-width: 55px;
+			height: 45px;
+			font-size: 13px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin-bottom: 10rpx;
+			margin-left: 3px;
+		}
+
+		.ShouYeButton3 {
+			padding: 3px !important;
+			min-width: 55px;
+			height: 45px;
+			font-size: 13px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin-bottom: 10rpx;
+			margin-left: 3px;
+		}
+
+
+	}
+
+	.ShouYeButton5 {
+		margin: 20rpx 10rpx;
+	}
+
+	.changeButton {
+		padding: 3px !important;
+		min-width: 75px;
+		height: 45px;
+		font-size: 13px;
+		margin-left: 5px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 10rpx;
+		background-color: #e6a23c;
+		color: white;
+	}
+
+
+	.ShouYeButton1 {
+
+		padding: 3px !important;
+		min-width: 75px;
+		height: 45px;
+		font-size: 13px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 10rpx;
+		margin-left: 3px;
+	}
+
+	.RecoudTextIndex {
+		font-size: 13px;
+		user-select: text;
+	}
+
+
+
+	.mini-btn {
+		padding: 5rpx;
+	}
+
+	.btns {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+	}
+
+	.button {
+		// width: 100rpx;
+		padding: 3px 5px;
+	}
+
+	.previews {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 10px;
+	}
+
+	.preview-wrap {
+		background: black;
+		margin: 2px;
+		min-width: 320px;
+		min-height: 240px;
+	}
+
+	.preview {
+		width: 400px;
+		height: 300px;
+	}
+
+	.selected {
+		background: red;
+	}
+
+	.logs {
+		// border: 1rpx solid #eee;
+		// padding: 5px;
+		// margin: 5px;
+	}
+
+
+
+
+	.flexc {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.flex {
+		display: flex;
+		align-items: center;
+	}
+
+	.flexw {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+	}
+
+	.flexe {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+	}
+
+	.flexs {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.btn {
+		background-color: #007aff;
+		width: 100%;
+		height: 90rpx;
+		font-size: 28rpx;
+		border-radius: 10rpx;
+		color: #fff;
+		font-weight: bold;
+	}
+
+	.btn:active {
+		transform: scale(.98);
+	}
+
+	.switch {
+		transform: scale(.6);
+	}
+
+	image {
+		animation: all .3s;
+	}
+
+	image:active {
+		transform: scale(.98);
+	}
+
+	.e-1 {
+		animation: topIn 2s;
+	}
+
+	@keyframes topIn {
+		30% {
+			transform: translateY(30rpx);
+		}
+
+		60% {
+			transform: translateY(-30rpx);
+		}
+
+		100% {
+			transform: translateY(0);
+		}
+	}
+
+	.e-2 {
+		animation: topIn1 2s;
+	}
+
+	@keyframes topIn1 {
+		30% {
+			transform: translateY(-30rpx);
+		}
+
+		60% {
+			transform: translateY(30rpx);
+		}
+
+		100% {
+			transform: translateY(-90rpx);
+		}
+	}
+
+	.e-3 {
+		animation: topIn2 2.2s;
+	}
+
+	@keyframes topIn2 {
+		30% {
+			transform: translateY(-40rpx);
+		}
+
+		60% {
+			transform: translateY(0);
+		}
+
+		100% {
+			transform: translateY(-120rpx);
+		}
+	}
+
+	.e-i {
+		margin: auto;
+		width: 400rpx;
+		height: 230rpx;
+		border-radius: 16rpx;
+		background-color: #f1f3f7;
+		animation-fill-mode: forwards;
+		/* animation: topIn 1s; */
+	}
+
+	@keyframes topIn {
+		30% {
+			transform: translateY(-60rpx);
+		}
+
+		60% {
+			transform: translateY(30rpx);
+		}
+
+		100% {
+			transform: translateY(0);
+		}
+	}
+
+	.w-t {
+		font-weight: bold;
+		line-height: 3;
+	}
+
+	.result {
+		margin: 0 auto 50rpx auto;
+		width: 650rpx;
+		text-align: center;
+		line-height: 0;
+		overflow: scroll;
+	}
+
+	.redult_width {
+		transform: rotate(-90deg) translateY(9%);
+	}
+
+	.imgs {
+		margin: auto;
+		width: 600rpx;
+		text-align: center;
+		line-height: 0;
+		overflow: scroll;
+	}
+
+	.imgs image {
+		display: block;
+		margin: auto;
+	}
+
+	.scroll {
+		white-space: nowrap;
+		overflow: scroll;
+	}
+
+	.scroll image {
+		display: inline-block;
+	}
+
+	.tip-abs {
+		z-index: 2;
+	}
+
+	.t-i {
+		color: #333;
+		width: 150rpx;
+		height: 60rpx;
+		transition: all .25s;
+	}
+
+	.t-a {
+		background-color: #fff;
+		font-weight: bold;
+		color: #000;
+		border-radius: 10rpx;
+		font-size: 28rpx;
+	}
+
+	.tab {
+		font-size: 26rpx;
+		background-color: #eff1f2;
+		padding: 6rpx;
+		border-radius: 12rpx;
+	}
+
+
+
+	.tip .desc {
+		font-size: 24rpx;
+		color: #999;
+		font-weight: 400;
+	}
+
+	.body {
+		width: 100%;
+		min-height: 100vh;
+	}
+
+	.btns-box {
+		width: 100%;
+		background-color: rgba(255, 255, 255, .9);
+		backdrop-filter: blur(20rpx);
+		padding-bottom: var(--status-bar-height);
+		border-radius: 30rpx 30rpx 0 0;
+	}
+
+	.btn {
+		width: 70%;
+		margin: 20rpx auto;
+	}
+
+	.btn-save {
+		background: linear-gradient(97.71deg, #ffa462, #ff4d42 88.36%);
+	}
+
+	.canid {
+		z-index: -10;
+	}
+
+	.uni-input {
+		width: 100px
+	}
+</style>

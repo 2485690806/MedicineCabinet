@@ -1,0 +1,16 @@
+{
+    "id": "wk-lodging",
+    "name": "动态过渡弹窗提示，加载中提示",
+    "displayName": "动态过渡弹窗提示，加载中提示",
+    "version": "1.0",
+    "description": "动态过渡弹窗提示，加载中提示",
+    "keywords": [
+        "动态过渡弹窗提示，加载中提示"
+    ],
+    "dcloudext": {
+        "category": [
+            "前端组件",
+            "通用组件"
+        ]
+    }
+}

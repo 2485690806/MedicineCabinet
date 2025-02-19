@@ -1,0 +1,780 @@
+<template>
+	<view style="display: flex;flex-direction: column; font-size: 12px;align-items: center;">
+
+		<uni-nav-bar height="30px" :border="false" left-icon="back" title="测试页面" @clickLeft="back" />
+
+
+		<view class="previews" v-if="show">
+
+			<view class="preview-wrap">
+				<sintrb-uvcviewer ref="iv" class="preview" :rotation="rotation" @onStatusChange="onStatusChange"
+					:showControlBar="showControlBarFlag" :showFps="showFpsFlag" :deviceId="deviceId">
+				</sintrb-uvcviewer>
+			</view>
+		</view>
+
+
+		<view class="btns">
+			<button class="button" size="mini" type="default" @tap="show = !show">{{show?"关闭":"显示"}}</button>
+			<!-- <button class="button" size="mini" type="default" @tap="show1 = !show1">{{show1?"关闭1":"显示1"}}</button> -->
+			<!-- <button class="button" size="mini" type="default" @tap="show2 = !show2">{{show2?"关闭2":"显示2"}}</button> -->
+			<button class="button" size="mini" type="default" @tap="doIVAction('test')">测试</button>
+			<button class="button" size="mini" type="default" @tap="doIVAction('start')">开始</button>
+			<button class="button" size="mini" type="default" @tap="doIVAction('stop')">停止</button>
+			<button class="button" size="mini" type="default" @tap="getSnap()">截图</button>
+			<button class="button" size="mini" type="default" @tap="rotation = (rotation + 90) % 360">旋转</button>
+			<button class="button" size="mini" type="default" @tap="getSupportedPreviewSizes()">支持的尺寸</button>
+			<button class="button" size="mini" type="default" @tap="getUsbDevices()">USB设备列表</button>
+			<button class="button" size="mini" type="default" @tap="getUvcDevices()">UVC设备列表</button>
+			<button class="button" size="mini" type="default" @tap="logs=[];images=[];">清空</button>
+			<button class="button" size="mini" type="default" @tap="deviceId=devices[0].DeviceId">切换</button>
+			<button class="button" size="mini" type="default" @tap="deviceId=devices[1].DeviceId">切换1</button>
+			<button class="button" size="mini" type="default" @tap="deviceId=devices[2].DeviceId">切换2</button>
+			<button class="button" size="mini" type="default" @tap="SnapAllDevice()">一键拍照</button>
+			<button class="button" size="mini" type="default" @tap="test1()">测试完成</button>
+			<button class="button" size="mini" type="default" @tap="test2()">测试中</button>
+		</view>
+
+		<scroll-view v-if="images.length" scroll-x="true" style="flex-direction: row;margin-top: 5px;">
+			<view style="display: flex;flex-direction: row;">
+				<image v-for="it,ix in images" @tap="viewImg(it,ix)" :key="it.key" :src="it.src" mode="heightFix"
+					style="max-width: 60px; height: 60px;border: 1px solid red; margin-right: 1px;"></image>
+			</view>
+		</scroll-view>
+		<scroll-view class="logs" scroll-y="true" style="flex-direction: column;margin-top: 5px;">
+			<view style="display: flex;flex-direction: column;">
+				<view v-for="l in logs"
+					style="margin-top: 1rpx; font-size: 8px; width: auto; border: 1rpx solid #EEEEEE; padding: 10rpx;">
+					<text>{{l}}</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script>
+	const iuvc = uni.requireNativePlugin("sintrb-uvcmodule")
+	export default {
+		data() {
+			return {
+				deviceId: 2004,
+				nowStatus: 0,
+				show: true,
+				show1: true,
+				show2: true,
+				previewSizeI: -11,
+				previewSizeList: [],
+				rotation: 270 % 360,
+				showControlBarFlag: true, //摄像头的控制功能
+				showFpsFlag: true, //Fps
+				interval: '',
+				top: 50, // 初始top值
+				timer: null, // 定时器
+				logs: [],
+				images: [],
+				devices: [],
+				statusListeners: [],
+				image: '',
+				image2: '',
+				beizhu: '',
+				beizhu2: '',
+				beizhu3: '',
+				beizhu4: '',
+				beizhu5: '',
+				beizhu6: '',
+				text3: '',
+				text2: '',
+				res: '',
+				msg: '',
+				message: ''
+			}
+		},
+		computed: {
+			boxStyle() {
+				return {
+					top: `${this.top}px`
+				};
+			}
+		},
+		beforeDestroy() {
+			console.log('beforeDestroy')
+			clearInterval(this.interval);
+			clearTimeout()
+			this.doIVAction('stop')
+		},
+		onLoad() {
+			if (!iuvc) {
+				this.addLog("获取插件失败，请确保该Demo是在自定义基座上运行！");
+			} else {
+				this.addLog("插入UVC摄像头，点击开始后会自动获取授权确认，同意后会自动播放，如果提示没找到摄像头，可能是你的摄像头不是UVC的摄像头。");
+				this.addLog("如果点击“USB设备列表”和“UVC设备列表”都不会显示设备信息，那么可能是你的连接线有问题");
+				this.addLog("如果点击“USB设备列表”能够看到设备信息而点击“UVC设备列表”看不到，那你的设备可能不是UVC设备（DeviceClass=239，DeviceSubclass=2）");
+			}
+			this.getUvcDevices();
+		},
+		watch: {
+			previewSizeI() {
+				// console.log("previewSizeI", this.previewSizeI);
+				this.addLog("previewSizeI " + this.previewSizeI);
+				// let size = this.previewSizeList[this.previewSizeI];
+				this.doIVAction("setPreviewSize", {
+					index: this.previewSizeI
+				});
+			}
+		},
+		mounted() {
+			let _this = this
+
+			// this.interval = setInterval(function() { //每5秒拍一次照片
+			// 	_this.getSnap()
+			// }, 2000);
+
+
+			// setTimeout(() => {
+			// 	clearInterval(_this.interval);
+			// 	uni.navigateBack()
+			// }, 20000);
+		},
+		onShow() {
+			let _this = this
+			setTimeout(function() {
+				_this.startAnimation();
+			}, 3500)
+		},
+		methods: {
+			back() {
+				// clearInterval(this.timer);
+				uni.navigateTo({
+					url: "/pages/admin_send_cmd/admin_send_cmd",
+					animationType: "slide-in-left",
+				})
+			},
+			startAnimation() {
+				this.timer = setInterval(() => {
+					if (this.top <= 320) {
+						this.top++; // top值增加 1
+					} else {
+						this.top = 50
+					}
+
+				}, 10); // 每 100 毫秒增加一次
+			},
+			stopAnimation() {
+				clearInterval(this.timer);
+			},
+			getUvcDevices() {
+				iuvc.getUvcDevices({}, res => {
+					res.data.devices.map(dev => {
+						let ndev = JSON.parse(JSON.stringify(dev));
+						dev.showJson = false;
+						dev.showPreview = false;
+						return dev;
+					})
+
+					console.log(JSON.stringify(res))
+					this.devices = res.data.devices
+					this.deviceId =  this.devices[0].DeviceId
+					this.addLog(res);
+				});
+			},
+			getSupportedPreviewSizes() {
+				this.doIVAction("getSupportedPreviewSizes", null, res => {
+					if (res && res.data) {
+						this.previewSizeList = res.data.items;
+					}
+				})
+			},
+			test1() {
+				let e = {
+					status: 5100
+				}
+				this.nowStatus = e.status
+				// 触发所有监听器
+				this.statusListeners.forEach(listener => listener(e));
+			},
+			test2() {
+
+				let e = {
+					status: -1
+				}
+				this.nowStatus = e.status
+				// 触发所有监听器
+				this.statusListeners.forEach(listener => listener(e));
+			},
+			//截图
+			async getSnap() {
+				await new Promise((resolve, reject) => {
+
+					this.doIVAction("snap", {}, async res => {
+						this.addLog(res);
+						this.image2 = res
+						if (res && res.data) {
+							// this.addImg(res.data.path);
+							await this.select(res.data.path)
+							resolve();
+
+							
+						} else {
+
+							reject('timeout');
+						}
+					})
+				});
+
+			},
+			clearFile(image_url) {
+				image_url = 'snap';
+				plus.io.resolveLocalFileSystemURL(image_url, function(entry) {
+					//entry.remove(); //删除单个文件 _downloads/改文件名
+					//递归删除目录
+					entry.removeRecursively(function(entry) {
+						plus.console.log("Remove succeeded");
+					}, function(e) {});
+				});
+			},
+
+			getSnap2() {
+				this.doIVAction("snap", {}, res => {
+					this.addLog(res);
+					this.image2 = res
+					if (res && res.data) {
+						this.addImg2(res.data.path);
+
+						this.clearFile()
+						uni.removeSavedFile({
+							filePath: "/snap",
+							complete: function(res) {
+								console.log(res);
+							}
+						});
+						uni.removeSavedFile({
+							filePath: res.data.path,
+							complete: function(res) {
+								console.log(res);
+							}
+						});
+					}
+				})
+			},
+
+
+			//截取到的图片上传到服务器
+			// upLoadPicture(){
+			// 	this.getSnap()
+			// },
+			async doIVAction(action, options, cbk) {
+				// try {
+				// 	setTimeout(() => {
+				// 		this.doIVAction1(action, options, cbk)
+				// 	}, 1000)
+				// } catch (e) {
+
+				// }
+				// try {
+				// 	setTimeout(() => {
+				// 		this.doIVAction2(action, options, cbk)
+				// 	}, 1000)
+				// } catch (e) {
+
+				// }
+
+				let iv = this.$refs.iv;
+				if (!iv) {
+					this.res = "没有iv " + Object.keys(this.$refs).join(",")
+					return;
+				}
+				let func = iv[action];
+				if (!func) {
+					this.addLog("没有iv." + action + " " + Object.keys(iv).join(","));
+					return;
+				}
+				// this.res = 'R ' + action + ' : ' + func;
+				let args = [];
+				if (options) {
+					args.push(options);
+				}
+				args.push(res => {
+					this.addLog(res);
+					if (cbk) {
+						cbk(res);
+					}
+				})
+				this.res = args;
+				try {
+					func.apply(iv, args);
+				} catch (e) {
+					this.addLog("ERR " + e);
+				}
+			},
+			onStatusChange(e) {
+				this.addLog(e.detail);
+				this.nowStatus = e.detail.status
+				// 触发所有监听器
+				this.statusListeners.forEach(listener => listener(e.detail));
+
+				if (e.detail.status === 5100 && !this.previewSizeList.length) {
+					// 预览成功，获取分辨率
+					this.getSupportedPreviewSizes()
+				}
+			},
+
+			async processDevices() {
+				// 遍历设备列表
+
+				iuvc.getUvcDevices({}, async res => {
+					res.data.devices.map(dev => {
+						let ndev = JSON.parse(JSON.stringify(dev));
+						dev.showJson = false;
+						dev.showPreview = false;
+						return dev;
+					})
+
+					console.log(JSON.stringify(res))
+					this.devices = res.data.devices
+
+					this.addLog(res);
+
+
+					// this.devices = [{
+					// 	DeviceId: 1002
+					// }, {
+					// 	DeviceId: 2005
+					// }, {
+					// 	DeviceId: 2004
+					// }, ]
+
+					// 遍历设备列表
+					for (const device of this.devices) {
+						// 将当前设备的DeviceId赋值给this.deviceId
+
+						console.log(device);
+						let previewSuccess = false;
+						while (!previewSuccess) {
+							console.log("--------" + device.DeviceId);
+							// 检查当前组件的deviceId是否已经是this.deviceId
+							if (this.deviceId === device.DeviceId) {
+								// 如果deviceId相同，检查当前状态是否为5100
+								if (this.nowStatus === 5100) {
+									console.log(111);
+									previewSuccess = true;
+									await this.getSnap(); // 直接调用拍照逻辑
+									await new Promise((resolve) => setTimeout(resolve, 5000)); // 等待1秒后再下一步
+
+									break; // 跳出while循环，继续下一个设备
+								}
+								// else {
+								// 	// 如果不是5100，等待状态更新
+								// 	await new Promise((resolve) => setTimeout(resolve, 1000)); // 等待1秒后重试
+								// 	continue;
+								// }
+							} else {
+								this.deviceId = device.DeviceId;
+							}
+
+							// 如果deviceId不同，触发组件重新加载
+							this.show = false;
+							this.show = true;
+							console.log(2222);
+							// 等待状态5100或超时
+							try {
+								await new Promise((resolve, reject) => {
+									// 设置10秒超时
+									const timeoutTimer = setTimeout(() => {
+										console.log(3333);
+										this.removeStatusListener(statusHandler);
+										reject('timeout'); // 抛出超时异常，就不执行下面的拍照逻辑
+									}, 15000);
+
+									// 状态监听处理
+									const statusHandler = (e) => {
+										console.log(e);
+										if (e.status === 5100) {
+											clearTimeout(timeoutTimer);
+											this.removeStatusListener(statusHandler);
+											resolve();
+											previewSuccess = true;
+										}
+									};
+
+									// 注册状态监听
+									this.addStatusListener(statusHandler);
+								});
+
+								// 状态5100确认后拍照上传
+								await this.getSnap(); // 需确保getSnap返回Promise
+
+								await new Promise((resolve) => setTimeout(resolve, 5000)); // 等待1秒后再下一步
+
+							} catch (error) {
+								// 超时后自动进入下一轮循环重新加载
+							}
+						}
+					}
+				});
+			},
+
+
+			async SnapAllDevice() {
+
+				await this.processDevices();
+
+			},
+			addLog(l) {
+				if (typeof(l) !== "string") {
+					l = JSON.stringify(l);
+				}
+				this.logs.unshift(l);
+			},
+			viewImg(it, ix) {
+				uni.previewImage({
+					urls: this.images.map(r => r.src),
+					index: ix,
+				})
+			},
+			addImg(img) {
+				this.images.splice(0, 0, {
+					src: img,
+					key: Date.now(),
+				})
+				this.image = img
+				this.addLog(img);
+				// console.log(this.images)
+				// （4）使用plus.zip.compressImage压缩图片
+				let _this = this
+				plus.zip.compressImage({
+						src: img,
+						dst: img,
+						overwrite: true,
+						quality: 40
+					},
+					zipRes => {
+						setTimeout(() => {
+							var reader = new plus.io.FileReader();
+							reader.onloadend = res => {
+								_this.text3 = JSON.stringify(res)
+								var speech = res.target.result; //base64图片
+								_this.text2 = speech
+
+								// _this.imgData = res;
+								_this.beizhu = '封装成功'
+								//将图片发送给后台
+								_this.faceHttp(speech);
+
+								// _this.$forceUpdate()
+							};
+							//一定要使用plus.io.convertLocalFileSystemURL将target地址转换为本地文件地址，否则readAsDataURL会找不到文件
+							_this.clearFile(plus.io.convertLocalFileSystemURL(zipRes.target))
+							uni.removeSavedFile({
+								filePath: plus.io.convertLocalFileSystemURL(zipRes.target),
+								complete: function(res) {
+									console.log(res);
+								}
+							});
+
+							reader.readAsDataURL(plus.io.convertLocalFileSystemURL(zipRes.target));
+						}, 1000);
+					},
+					function(error) {
+						console.log('Compress error!', error);
+						_this.beizhu = '封装失败'
+					}
+				);
+			},
+			addImg2(img) {
+				this.images.splice(0, 0, {
+					src: img,
+					key: Date.now(),
+				})
+				this.image = img
+				this.addLog(img);
+				// console.log(this.images)
+				// （4）使用plus.zip.compressImage压缩图片
+				let _this = this
+				var newStr = img.substring(7);
+				plus.zip.compressImage({
+						src: newStr,
+						dst: newStr,
+						overwrite: true,
+						quality: 40
+					},
+					zipRes => {
+						setTimeout(() => {
+							var reader = new plus.io.FileReader();
+							reader.onloadend = res => {
+								var speech = res.target.result; //base64图片
+								console.log(speech);
+
+								// _this.imgData = res;
+								_this.beizhu = '封装成功'
+								//将图片发送给后台
+								_this.faceHttp(speech);
+
+								// _this.$forceUpdate()
+							};
+							//一定要使用plus.io.convertLocalFileSystemURL将target地址转换为本地文件地址，否则readAsDataURL会找不到文件
+							reader.readAsDataURL(plus.io.convertLocalFileSystemURL(zipRes.target));
+						}, 2000);
+					},
+					function(error) {
+						console.log('Compress error!', error);
+						_this.beizhu = '封装失败'
+					}
+				);
+			},
+			// （5）将base64图片【this.imgData】发送给后台
+			faceHttp(speech) {
+				// uni.showToast({
+				// 	title: '成功'
+				// })
+				this.beizhu2 = 'faceHttp触发成功'
+				let _this = this
+				// 省略后台请求
+				uni.request({
+					url: 'https://billiardroom.wteam.club/face/face-login',
+					method: "POST",
+					data: {
+						imagebast64: speech
+					},
+					success: (res) => {
+						_this.beizhu4 = '请求成功'
+						_this.res = JSON.stringify(res)
+						// uni.showToast({
+						// 	title: 'faceHttp'
+						// })
+
+						console.log(res);
+						if (res.data.code == 200) {
+							_this.beizhu5 = '请求200成功'
+							clearInterval(_this.interval);
+							// _this.stopPreview(); //取消摄像
+
+
+							// uni.setStorageSync('userInfo', res.data.msg)
+							// setTimeout(function() {
+							// 	uni.redirectTo({
+							// 		url: '/pages/sureId/sureId'
+							// 	})
+							// }, 1000);
+							// console.log('登录成功')
+
+
+							// _this.message = res.data.msg
+						} else if (res.data.code == 300) {
+							//未注册人脸
+							console.log('登录失败')
+							_this.beizhu5 = '请求300失败'
+							// this.startPreview(); //开启预览并设置摄像头
+							// this.poenCarme();
+							_this.message = res.data.msg
+							setTimeout(function() {
+								uni.redirectTo({
+									url: '/pages/openByCode/openByCode'
+								})
+							}, 1500);
+							// _this.messageToggle('info',res.data.msg)
+						} else {
+							//拍照不完整
+							_this.beizhu5 = '请求其他失败'
+							console.log('登录失败')
+							// this.startPreview(); //开启预览并设置摄像头
+							// this.poenCarme();
+							_this.message = res.data.msg
+							// _this.messageToggle('info',res.data.msg)
+						}
+					},
+					fail(err) {
+						_this.startPreview(); //开启预览并设置摄像头
+						_this.poenCarme();
+						console.log('识别失败', err)
+						uni.showToast({
+							title: '识别失败',
+							icon: 'error'
+						})
+						_this.beizhu4 = '请求失败'
+						_this.beizhu6 = JSON.stringify(err)
+					}
+
+				})
+			},
+
+
+			async select(tempFilePaths) {
+				// this.showXuanZe = true
+				return new Promise((resolve, reject) => {
+
+					uni.showLoading({
+						title: '上传中'
+					});
+					// const tempFilePaths = e.tempFilePaths; //e是获取的图片源
+					uni.uploadFile({
+						url: 'https://thjindex.wteam.club/common/uploadFile', //上传图片的后端接口
+						filePath: tempFilePaths,
+						name: 'file',
+						success: res => {
+							uni.hideLoading();
+							console.log(res);
+							let imageUrl = JSON.parse(res.data).urls
+
+
+							this.images.splice(0, 0, {
+								src: imageUrl,
+								key: Date.now(),
+							})
+
+							resolve();
+
+							// this.form.imageUrl = this.form.imageUrl.slice(0, -1)
+							// console.log(this.form.imageUrl);
+							// this.ISselect = false
+						},
+						fail() {
+							reject('timeout');
+							uni.hideLoading();
+						}
+					})
+
+				});
+
+
+
+			},
+
+			// 在组件中需实现的状态监听器管理
+			addStatusListener(listener) {
+				this.statusListeners.push(listener);
+			},
+
+			removeStatusListener(listener) {
+				this.statusListeners = this.statusListeners.filter(l => l !== listener);
+			},
+
+
+		}
+	}
+</script>
+
+<style lang="scss">
+	.mini-btn {
+		padding: 5rpx;
+	}
+
+	.btns {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+	}
+
+	.titleText {
+		font-size: 36rpx;
+		font-weight: bold;
+		margin: 20px 0 20px;
+		color: rgba(203, 68, 60, 1);
+	}
+
+	.scan-line {
+		position: absolute;
+		// top: -300rpx;
+		// left: 0;
+		// right: 0;
+		height: 150px;
+		width: 750rpx;
+		// background-color: #3982ff;
+		background: linear-gradient(to bottom, transparent, #2c64c5);
+		border-bottom: 1px dashed #3982ff;
+		// animation: scan 5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+	}
+
+	.outline-img {
+		// background-color: red;
+		width: 300px;
+		height: 300px*1125/750;
+		// background-color: red;
+		top: 70px;
+		position: absolute;
+	}
+
+	.remind {
+		position: absolute;
+		top: 95px;
+		width: 750rpx;
+		text-align: center;
+		align-items: center;
+		justify-content: center;
+		font-size: 40rpx;
+
+		.remind-text {
+			color: white;
+			font-weight: bold;
+		}
+	}
+
+
+
+	.textOuterBox {
+		margin: 20rpx;
+
+		width: 750rpx;
+		display: flex;
+		align-items: center;
+
+		.textBox {
+			border-radius: 10rpx;
+			min-width: 400rpx;
+			min-height: 50rpx;
+			padding: 10rpx;
+			height: 50rpx;
+			border: 1px dashed red;
+			line-height: 50rpx;
+			text-align: center;
+		}
+	}
+
+	//倒计时
+	.countDown {
+		width: 750rpx;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.button {
+		// width: 100rpx;
+		padding: 3px 5px;
+	}
+
+	.previews {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 10px;
+		position: relative;
+	}
+
+	.preview-wrap {
+		background: black;
+		margin: 2px;
+		// min-width: 320px;
+		// min-height: 240px;
+	}
+
+	.preview {
+		width: 1000px;
+		height: 612px;	
+
+		// width: 550px;
+		// height: 212px;
+	}
+
+	.selected {
+		background: red;
+	}
+
+	.logs {
+		// border: 1rpx solid #eee;
+		// padding: 5px;
+		// margin: 5px;
+	}
+</style>

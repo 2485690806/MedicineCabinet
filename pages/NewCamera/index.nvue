@@ -1,0 +1,416 @@
+<template>
+	<view>
+		<uni-card title="安卓UVC摄像头推流原生插件">
+			<leven-uvcCameraPusher ref="refLevenUsbCamera" style="flex:1; height: 300px;" :config="config"
+				@onDestroy="onDestroy" @onAttach="onAttach" @onDettach="onDettach" @onConnect="onConnect"
+				@onDisconnect="onDisconnect" @onCancel="onCancel" @onError="onError" @onPusherError="onPusherError"
+				@onPusherConnect="onPusherConnect" @onPusherStop="onPusherStop" @onRecording="onRecording">
+			</leven-uvcCameraPusher>
+			<button type="primary" @click="changeCamera">切换摄像头</button>
+			<button type="primary" @click="capture">开始拍照</button>
+			<button type="primary" @click="stopPreview">关闭预览</button>
+			<button type="primary" @click="openPreview">开启预览</button>
+			<button type="primary" @click="startRecord">开始录制</button>
+			<button type="primary" @click="stopRecord">结束录制</button>
+			<button type="primary" @click="setSize">设置分辨率</button>
+			<button type="primary" @click="getSupportedSize">获取支持的分辨率</button>
+			<button type="primary" @click="close">关闭摄像头</button>
+			<button type="primary" @click="open">开启摄像头</button>
+			<button type="primary" @click="logStr = ''">清空日志</button>
+
+			<button class="button" size="mini" type="primary" @click="SnapAllDevice()">一键拍照</button>
+			<button class="button" size="mini" type="primary" @click="test1()">测试完成</button>
+			<button class="button" size="mini" type="primary" @click="test2()">测试中</button>
+
+		</uni-card>
+		<uni-card title="推流功能">
+			<uni-section title="推流地址,RTMP协议">
+				<uni-easyinput v-model="pusherForm.url" placeholder="请输入推流地址"></uni-easyinput>
+			</uni-section>
+			<uni-section title="直播地址">
+				<uni-easyinput v-model="pusherForm.playUrl" placeholder="请输入直播地址"></uni-easyinput>
+			</uni-section>
+			<uni-section title="推流类型">
+				<uni-data-checkbox v-model="pusherForm.type" :localdata="pusherType"></uni-data-checkbox>
+			</uni-section>
+			<uni-section title="关闭音频">
+				<uni-data-checkbox v-model="pusherForm.voiceClose" :localdata="voiceCloseType"></uni-data-checkbox>
+			</uni-section>
+			<button type="primary" @click="startPusher">开启推流</button>
+			<button type="primary" @click="stopPusher">关闭推流</button>
+		</uni-card>
+		<uni-card title="播放流" v-if="isPusher">
+			<video style="flex:1; height: 300px;" :src="pusherForm.playUrl" :is-live="true" :autoplay="true"></video>
+		</uni-card>
+		<uni-card class="uni-card-box" title="日志">
+			<view><text style="font-size: 14px; flex-wrap: wrap;">{{logStr}}</text></view>
+		</uni-card>
+
+		<!-- 弹窗 -->
+		<uni-popup ref="refSelectSizePop">
+			<view style="width: 300px;">
+				<uni-card title="请选择分辨率">
+					<button v-for="(item, index) in sizeList" :key="index" type="primary"
+						@click="selectSizeItem(item)">{{item.width}}×{{item.height}}</button>
+				</uni-card>
+			</view>
+		</uni-popup>
+	</view>
+</template>
+
+<script>
+	export default {
+		data() {
+			return {
+				//摄像头配置
+				config: {
+					//组件旋转角度
+					rotation: 0
+				},
+				// 摄像头列表
+				deviceList: [],
+				// 当前预览的摄像头索引
+				previewIndex: 0,
+				// 当前分辨率的索引
+				sizeIndex: 0,
+				logStr: "",
+				// 推流表单
+				pusherForm: {
+					//推流类型,1.数据推流，2.文件推流
+					type: 1,
+					// 推流地址
+					url: "rtmp://195964.push.tlivecloud.com/live/leven?txSecret=7b50d9228fbbb9f71b29a4f2fc29bdd8&txTime=662709E0",
+					// 直播地址
+					playUrl: "rtmp://txplayer.yeyuboke.com/live/leven",
+					//是否关闭音频
+					voiceClose: true
+				},
+				//推流类型
+				pusherType: [{
+					text: "数据推流",
+					value: 1
+				}, {
+					text: "文件推流",
+					value: 2
+				}],
+				//是否开启音频
+				voiceCloseType: [{
+					text: "是",
+					value: true
+				}, {
+					text: "否",
+					value: false
+				}],
+				// 分辨率列表
+				sizeList: [],
+				// 是否开始推流
+				isPusher: false
+			}
+		},
+		methods: {
+			async SnapAllDevice() {
+				// 遍历设备列表
+				if (this.deviceList.length == 0) {
+					this.showToast("设备列表为空");
+					return false;
+				}
+				this.previewIndex = 0; // 从头开始拍照
+				// this.devices = [{
+				// 	DeviceId: 1002
+				// }, {
+				// 	DeviceId: 2005
+				// }, {
+				// 	DeviceId: 2004
+				// }, ]
+
+				// 遍历设备列表
+				for (const device of this.deviceList) {
+					// 将当前设备的DeviceId赋值给this.deviceId
+
+
+					let index = this.previewIndex % this.deviceList.length;
+					if (this.$refs.refLevenUsbCamera) {
+						this.$refs.refLevenUsbCamera.changeCamera({
+							deviceName: this.deviceList[index].deviceName
+						}, res => {
+							// console.log(res)
+							this.writeLog(JSON.stringify(res))
+						})
+						this.$refs.refLevenUsbCamera.open(res => {
+							console.log(res)
+						})
+						this.$refs.refLevenUsbCamera.openPreview(res => {
+							this.writeLog(JSON.stringify(res))
+							this.nowStatus = res.code
+							// 触发所有监听器
+							this.statusListeners.forEach(listener => listener(res));
+
+						})
+					}
+					this.previewIndex++;
+					console.log(device);
+					let previewSuccess = false;
+					while (!previewSuccess) {
+						console.log("--------" + device.deviceId);
+						// 如果当前状态是 预览状态
+						if (this.nowStatus === 0) {
+							console.log(111);
+							previewSuccess = true;
+							await this.getSnap(); // 直接调用拍照逻辑
+							await new Promise((resolve) => setTimeout(resolve, 5000)); // 等待1秒后再下一步
+
+							break; // 跳出while循环，继续下一个设备
+						}
+
+						console.log(2222);
+						// 等待状态5100或超时
+						try {
+							await new Promise((resolve, reject) => {
+								// 设置10秒超时
+								const timeoutTimer = setTimeout(() => {
+									console.log(3333);
+									this.removeStatusListener(statusHandler);
+									reject('timeout');
+								}, 10000);
+
+								// 状态监听处理
+								const statusHandler = (e) => {
+									console.log(e);
+									if (res.code === 0) {
+										clearTimeout(timeoutTimer);
+										this.removeStatusListener(statusHandler);
+										resolve();
+										previewSuccess = true;
+									}
+								};
+
+								// 注册状态监听
+								this.addStatusListener(statusHandler);
+							});
+
+							// 状态5100确认后拍照上传
+							await this.getSnap(); // 需确保getSnap返回Promise
+
+							await new Promise((resolve) => setTimeout(resolve, 5000)); // 等待1秒后再下一步
+
+						} catch (error) {
+							// 超时后自动进入下一轮循环重新加载
+						}
+					}
+				}
+			},
+
+
+			// 切换摄像头
+			changeCamera() {
+				if (this.deviceList.length == 0) {
+					this.showToast("设备列表为空");
+					return false;
+				}
+				this.previewIndex++;
+				let index = this.previewIndex % this.deviceList.length;
+				if (this.$refs.refLevenUsbCamera) {
+					this.$refs.refLevenUsbCamera.changeCamera({
+						deviceName: this.deviceList[index].deviceName
+					}, res => {
+						// console.log(res)
+						this.writeLog(JSON.stringify(res))
+					})
+				}
+			},
+			// 拍照
+			capture() {
+				if (this.$refs.refLevenUsbCamera) {
+					this.$refs.refLevenUsbCamera.capture(res => {
+						// console.log(res)
+						this.writeLog(JSON.stringify(res))
+					})
+				}
+			},
+			// 关闭预览
+			stopPreview() {
+				if (this.$refs.refLevenUsbCamera) {
+					this.$refs.refLevenUsbCamera.stopPreview(res => {
+						// console.log(res)
+						this.writeLog(JSON.stringify(res))
+					})
+				}
+			},
+			// 开启预览
+			openPreview() {
+				if (this.$refs.refLevenUsbCamera) {
+					this.$refs.refLevenUsbCamera.openPreview(res => {
+						// console.log(res)
+						this.writeLog(JSON.stringify(res))
+					})
+				}
+			},
+			// 开始录制
+			startRecord() {
+				if (this.$refs.refLevenUsbCamera) {
+					this.$refs.refLevenUsbCamera.startRecord(res => {
+						// console.log(res)
+						this.writeLog(JSON.stringify(res))
+					})
+				}
+			},
+			// 结束录制
+			stopRecord() {
+				if (this.$refs.refLevenUsbCamera) {
+					this.$refs.refLevenUsbCamera.stopRecord(res => {
+						// console.log(res)
+						this.writeLog(JSON.stringify(res))
+					})
+				}
+			},
+			// 设置分辨率
+			setSize() {
+				if (this.$refs.refLevenUsbCamera) {
+					this.$refs.refLevenUsbCamera.getSupportedSize(res => {
+						this.sizeList = res.data.list;
+						if (this.$refs.refSelectSizePop) {
+							this.$refs.refSelectSizePop.open();
+						}
+					})
+				}
+			},
+			// 选择结果
+			selectSizeItem(item) {
+				this.$refs.refLevenUsbCamera.setSize({
+					width: item.width,
+					height: item.height
+				}, res => {
+					// console.log(res)
+					this.writeLog(JSON.stringify(res))
+					if (this.$refs.refSelectSizePop) {
+						this.$refs.refSelectSizePop.close();
+					}
+				})
+			},
+			// 获取支持的分辨率
+			getSupportedSize() {
+				if (this.$refs.refLevenUsbCamera) {
+					this.$refs.refLevenUsbCamera.getSupportedSize(res => {
+						// console.log(res)
+						this.writeLog(JSON.stringify(res))
+					})
+				}
+			},
+			// 关闭摄像头
+			close() {
+				if (this.$refs.refLevenUsbCamera) {
+					this.$refs.refLevenUsbCamera.close(res => {
+						// console.log(res)
+						this.writeLog(JSON.stringify(res))
+					})
+				}
+			},
+			// 开启摄像头
+			open() {
+				if (this.$refs.refLevenUsbCamera) {
+					this.$refs.refLevenUsbCamera.open(res => {
+						// console.log(res)
+						this.writeLog(JSON.stringify(res))
+					})
+				}
+			},
+			// 开启推流
+			startPusher() {
+				try {
+					if (uni.$lv.validate.empty(this.pusherForm.url)) {
+						throw new Error("请输入推流地址");
+					}
+					if (this.$refs.refLevenUsbCamera) {
+						this.$refs.refLevenUsbCamera.startPusher(this.pusherForm)
+					}
+				} catch (e) {
+					uni.$lv.func.toast(e.message);
+				}
+			},
+			// 关闭推流
+			stopPusher() {
+				if (this.$refs.refLevenUsbCamera) {
+					this.$refs.refLevenUsbCamera.stopPusher()
+				}
+			},
+			// 组件卸载
+			onDestroy(e) {
+				this.writeLog("onDestroy:" + JSON.stringify(e))
+			},
+			// 组件加载完成
+			onAttach(e) {
+				let detail = e.detail;
+				this.deviceList = detail.deviceList || [];
+				this.writeLog("onAttach:" + JSON.stringify(e))
+			},
+			// 设备移除
+			onDettach(e) {
+				let detail = e.detail;
+				this.deviceList = detail.deviceList || [];
+				this.writeLog("onDettach:" + JSON.stringify(e))
+			},
+			// 摄像机连接成功
+			onConnect(e) {
+				let detail = e.detail;
+				this.deviceList = detail.deviceList || [];
+				this.writeLog("onConnect:" + JSON.stringify(e))
+			},
+			// 断开连接
+			onDisconnect(e) {
+				let detail = e.detail;
+				this.deviceList = detail.deviceList || [];
+				this.writeLog("onDisconnect:" + JSON.stringify(e))
+			},
+			// 取消连接
+			onCancel(e) {
+				let detail = e.detail;
+				this.deviceList = detail.deviceList || [];
+				this.writeLog("onCancel:" + JSON.stringify(e))
+			},
+			// 系统错误
+			onError(e) {
+				this.writeLog("onError:" + JSON.stringify(e))
+			},
+			// 推流错误
+			onPusherError(e) {
+				this.isPusher = false;
+				this.writeLog("onPusherError:" + JSON.stringify(e))
+			},
+			// 推流连接成功
+			onPusherConnect(e) {
+				let detail = e.detail;
+				if (detail.status == 3) {
+					//推流中
+					this.isPusher = true;
+				}
+				this.writeLog("onPusherConnect:" + JSON.stringify(e))
+			},
+			// 停止推流
+			onPusherStop(e) {
+				this.isPusher = false;
+				this.writeLog("onPusherStop:" + JSON.stringify(e))
+			},
+			//录像结果
+			onRecording(e) {
+				this.writeLog("onRecording:" + JSON.stringify(e))
+			},
+			// 提示信息
+			showToast(content) {
+				uni.showToast({
+					icon: "none",
+					title: content
+				})
+			},
+			// 写日志
+			writeLog(str) {
+				console.log(str);
+				let logStr = uni.$lv.date.format(null, "yyyy-mm-dd hh:MM:ss") + " " + str + "\n";
+				this.logStr = logStr + this.logStr;
+			}
+		}
+	}
+</script>
+
+<style>
+
+</style>

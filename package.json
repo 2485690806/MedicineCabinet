@@ -1,0 +1,20 @@
+{
+    "id": "stomprabbitmq-stomprabbitmq",
+    "name": "uniapp安卓、H5、小程序用stomp.js实现通讯，连接rabbitmq",
+    "displayName": "uniapp安卓、H5、小程序用stomp.js实现通讯，连接rabbitmq",
+    "version": "1.0.6",
+    "description": "uniapp安卓、H5、小程序集成用stomp.js实现websocket通讯，连接rabbitmq，可连接交换机 消息队列，支持断线重连。有问题可联系wx：ljh2485690806",
+    "keywords": [
+        "stomp.js",
+        "websocket通讯",
+        "rabbitmq",
+        "交换机",
+        "消息队列"
+    ],
+    "dcloudext": {
+        "category": [
+            "前端组件",
+            "通用组件"
+        ]
+    }
+}

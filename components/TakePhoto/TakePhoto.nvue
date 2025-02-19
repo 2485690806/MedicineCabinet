@@ -1,0 +1,95 @@
+<template>
+	<view>
+		<view class="previews" v-if="show">
+		
+			<view class="preview-wrap">
+				<sintrb-uvcviewer ref="iv" class="preview" :rotation="rotation" @onStatusChange="onStatusChange"
+					:showControlBar="showControlBarFlag" :showFps="showFpsFlag">
+				</sintrb-uvcviewer>
+			</view>
+		</view>
+		<view class="previews" v-if="show">
+		
+			<view class="preview-wrap">
+				<sintrb-uvcviewer ref="iv2" class="preview" :rotation="rotation" @onStatusChange="onStatusChange"
+					:showControlBar="showControlBarFlag" :showFps="showFpsFlag">
+				</sintrb-uvcviewer>
+			</view>
+		</view>
+		
+		<view class="previews" v-if="show">
+			
+			<view class="preview-wrap">
+				<sintrb-uvcviewer ref="iv3" class="preview" :rotation="rotation" @onStatusChange="onStatusChange"
+					:showControlBar="showControlBarFlag" :showFps="showFpsFlag">
+				</sintrb-uvcviewer>
+			</view>
+		</view>
+		
+		
+		
+		<button class="ShouYeButton1" type="primary" @click="snapshot()">
+			拍照
+		</button>
+		<view class="zp" v-for="(item,index) in list">
+			<image :src="item" mode="" style="width: 200rpx;height: 200rpx;	border-radius: 10rpx;">
+			</image>
+		</view>
+		
+		<live-pusher id="livePusher" ref="livePusher" class="livePusher" mode="FHD" beauty="0" whiteness="0" 
+		min-bitrate="1000" audio-quality="16KHz" device-position="back" :auto-focus="true"
+			:muted="true" :enable-camera="true" :enable-mic="false" :zoom="false"></live-pusher>
+		
+	</view>
+</template>
+
+<script>
+	export default {
+		name:"TakePhoto",
+		data() {
+			return {
+				livePusher: null, //流视频对象
+			};
+		},
+		mounted() {
+			
+			this.livePusher = uni.createLivePusherContext('livePusher', this);
+			this.startPreview();
+		},
+		methods:{
+			
+			//开始预览
+			startPreview() {
+				this.livePusher.startPreview({
+					success: a => {
+						console.log(a);
+					}
+				});
+			},
+			
+			//抓拍
+			snapshot() {
+				console.log(1111);
+				let _this = this;
+				_this.livePusher.snapshot({
+					success: e => {
+						console.log(e);
+						// _this.snapshotsrc = e.message.tempImagePath;
+						_this.list.push(e.message.tempImagePath)
+						// _this.stopPreview();
+						// _this.setImage();
+						// uni.navigateBack();
+					},
+					fail:e1=>{
+						console.log(e1);
+					},
+				});
+			},
+			
+		}
+	}
+</script>
+
+<style>
+
+</style>

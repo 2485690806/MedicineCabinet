@@ -1,0 +1,1210 @@
+<!-- <template>
+	<view>
+
+		<uni-nav-bar height="10vh" :border="false" left-icon="back" title="测试页面" @clickLeft="back" />
+
+		<view style="font-size: 20rpx;">
+
+			当前设备号：{{storeId}}
+		</view>
+
+		<uni-title type="h1" title="------------履带出货命令-------------"></uni-title>
+		
+		<view class="">
+			<uni-section title="弹簧串口" type="line">
+				<input class="uni-input" placeholder="自动获得焦点" v-model="value1" />
+			</uni-section>
+		</view>
+		
+		<button class="ShouYeButton1" type="warn" @click="changeTHJ()">
+			确定修弹簧串口
+		</button>
+		<view class="Xian"></view>
+		<view class="RecoudTextIndex">
+			收到指令:
+			<view class="RecoudText">
+				<view v-for="(item,index) in RecoudTextTHJ" :key="index">
+					{{item}}
+				</view>
+			</view>
+		
+			<view class="CenShiIndex">
+				<button class="ShouYeButton1" type="primary" @click="RecoudTextTHJ=[]">清空消息</button>
+			</view>
+		
+		
+		</view>
+		
+		<view class="Xian"></view>
+		<view class="Xian"></view>
+		<view class="RecoudTextIndex">
+			发送指令:
+			<view class="RecoudText">
+				<view v-for="(item,index) in SendTextTHJ" :key="index">
+					{{item}}
+				</view>
+			</view>
+			<view class="CenShiIndex">
+				<button class="ShouYeButton1" type="primary" @click="SendTextTHJ=[]">清空消息</button>
+			</view>
+		</view>
+		
+		<uni-group title="第一层" margin-top="20">
+			<view class="CenShiIndex">
+				<button class="ShouYeButton2" type="primary" v-for="item of 11" @click="HuiShouSendShouHuo(item)">
+					货道{{item}}
+				</button>
+			</view>
+		</uni-group>
+		
+		<uni-group title="第二层" margin-top="20">
+			<view class="CenShiIndex">
+				<button class="ShouYeButton2" type="primary" v-for="item of 11" @click="HuiShouSendShouHuo1(item)">
+					货道{{item}}
+				</button>
+			</view>
+		</uni-group>
+		<uni-group title="第三层" margin-top="20">
+			<view class="CenShiIndex">
+				<button class="ShouYeButton2" type="primary" v-for="item of 9" @click="HuiShouSendShouHuo2(item)">
+					货道{{item}}
+				</button>
+			</view>
+		</uni-group>
+		
+		<uni-group title="第四层" margin-top="20">
+			<view class="CenShiIndex">
+				<button class="ShouYeButton2" type="primary" v-for="item of 9" @click="HuiShouSendShouHuo3(item)">
+					货道{{item}}
+				</button>
+			</view>
+		</uni-group>
+		
+		<uni-group title="第五层" margin-top="20">
+			<view class="CenShiIndex">
+				<button class="ShouYeButton" type="primary" v-for="item of 12" @click="HuiShouSendShouHuo4(item)">
+					货道{{item}}
+				</button>
+			</view>
+		</uni-group>
+		
+		<uni-group title="第六层" margin-top="20">
+			<view class="CenShiIndex">
+				<button class="ShouYeButton" type="primary" v-for="item of 13" @click="HuiShouSendShouHuo5(item)">
+					货道{{item}}
+				</button>
+			</view>
+		</uni-group>
+		
+		<uni-group title="第七层" margin-top="20">
+			<view class="CenShiIndex">
+				<button class="ShouYeButton" type="primary" v-for="item of 13" @click="HuiShouSendShouHuo6(item)">
+					货道{{item}}
+				</button>
+			</view>
+		</uni-group>
+		
+		<uni-group title="第八层" margin-top="20">
+			<view class="CenShiIndex">
+				<button class="ShouYeButton" type="primary" v-for="item of 13" @click="HuiShouSendShouHuo7(item)">
+					货道{{item}}
+				</button>
+			</view>
+		</uni-group>
+		
+		
+		<uni-group title="第九层" margin-top="20">
+			<view class="CenShiIndex">
+				<button class="ShouYeButton" type="primary" v-for="item of 13" @click="HuiShouSendShouHuo8(item)">
+					货道{{item}}
+				</button>
+			</view>
+		</uni-group>
+		
+		
+		
+
+		<button class="ShouYeButton1" type="primary" @click="snapshot()">
+			拍照
+		</button>
+
+		<view>
+			<button style="background-color: gold;color: black;" class='ButtonONE' @click="logout()">
+				登出app
+			</button>
+		</view>
+
+
+	</view>
+</template>
+
+<script>
+	const SPcoin = uni.requireNativePlugin('Fvv-UniSerialPort'); // 弹簧机
+
+	const CSD = uni.requireNativePlugin('Fvv-UniSerialPort2'); // 电机
+	// const JDJ = uni.requireNativePlugin('Fvv-UniSerialPort'); // 上下步进电机
+	// const ZLDJ = uni.requireNativePlugin('Fvv-UniSerialPort'); // 直流电机
+	export default {
+		data() {
+			return {
+
+
+				storeId: '',
+				timer: '',
+				CashierPath: '',
+				baudRate: '9600',
+
+				RecoudText: [],
+				SendText: [],
+				RecoudTextTHJ: [],
+				SendTextTHJ: [],
+				RecoudTextTHJ2: [],
+				SendTextTHJ2: [],
+				list: [],
+				value: "/dev/ttyS7",
+				value1: "/dev/ttyS2",
+				value2: "/dev/ttyS3",
+				// value: 0,
+				// value1: 7,
+				maxNumber: 0,
+				NowBox: 0,
+				NowBox2: 0,
+				alltimer2: null,
+				CWMcode: null,
+				alltimer: null,
+
+				isQuHuo: true, // 是否是取货流程，true：取货流程，false：回收流程
+
+				range: [{
+						value: 0,
+						text: "/dev/ttyS7"
+					},
+					{
+						value: 1,
+						text: "/dev/ttyS4"
+					},
+					{
+						value: 6,
+						text: "/dev/ttyS5"
+					},
+					{
+						value: 2,
+						text: "/dev/ttyS3"
+					},
+					{
+						value: 3,
+						text: "/dev/ttyS2"
+					},
+					{
+						value: 4,
+						text: "/dev/ttyS0"
+					},
+					{
+						value: 7,
+						text: "/dev/ttyS1"
+					},
+					{
+						value: 8,
+						text: "/dev/ttyS8"
+					},
+					{
+						value: 5,
+						text: "/dev/ttyFIQ0"
+					},
+				],
+			}
+		},
+		onShow() {
+			// this.timeup()
+		},
+		onHide() {
+			// clearInterval(this.timer);
+			// this.closePort()
+		},
+		onUnload() {
+			clearInterval(this.timer);
+			// this.closePort()
+		},
+		mounted() {
+
+
+			this.$forceUpdate()
+
+			this.storeId = uni.getStorageSync("storeId");
+
+
+
+			this.init();
+
+
+		},
+
+		methods: {
+
+			sendBUFWQHMCommand() {
+
+				this.SendText.push("AA1402010000000001000000000000000000A2BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				CSD.sendHex("AA1402010000000001000000000000000000A2BB");
+			},
+			sendYAOFWQHMCommand() {
+
+				this.SendText.push("AA1402010001000001000000000000000000A2BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				CSD.sendHex("AA1402010001000001000000000000000000A2BB");
+			},
+			sendKAIQHMCommand() {
+
+				this.SendText.push("AA1408010000001E00000000000000000000A2BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				CSD.sendHex("AA1408010000001E00000000000000000000A2BB");
+			},
+
+
+			sendDJZZCommand2() {
+
+				this.SendText.push("AA0B0501030000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				CSD.sendHex("AA0B0501030000000000BB");
+			},
+			sendDJTZCommand2() {
+
+				this.SendText.push("AA0B0501030200000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				CSD.sendHex("AA0B0501030200000000BB");
+			},
+			sendDJFZCommand2() {
+
+				this.SendText.push("AA0B0501030100000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				CSD.sendHex("AA0B0501030100000000BB");
+			},
+			sendCMDJZZCommand2() {
+
+				this.SendText.push("AA0B0501020000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				CSD.sendHex("AA0B0501020000000000BB");
+			},
+			sendCMDJTZCommand2() {
+
+				this.SendText.push("AA0B0501020100000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				CSD.sendHex("AA0B0501020100000000BB");
+			},
+			sendCMDJFZCommand2() {
+
+				this.SendText.push("AA0B0501020100000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				CSD.sendHex("AA0B0501020100000000BB");
+			},
+			sendCZDDJZZCommand() {
+
+				this.SendText.push("AA0B0501040000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				CSD.sendHex("AA0B0501040000000000BB");
+			},
+			sendCZDDJTZCommand() {
+
+				this.SendText.push("AA0B0501040200000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				CSD.sendHex("AA0B0501040200000000BB");
+			},
+
+
+			changeCSD() {
+				// this.range.forEach(item => {
+				// 	if (this.value == item.value) {
+				// 		console.log(item);
+
+				CSD.setBaudRate(115200);
+				CSD.setStopBits(1);
+				CSD.setDataBits(8);
+				CSD.setParity(0);
+				CSD.setPath("/dev/ttyS1");
+				// CSD.setPath(this.value);
+
+				CSD.open(res => {
+					if (!res.status) {
+						uni.showToast({
+							title: res.msg,
+							duration: 2000,
+							icon: "none"
+						});
+						return
+					}
+					uni.showToast({
+						title: "切换电机串口成功",
+						duration: 2000,
+					});
+
+
+					/*****************************************/
+					CSD.onMessageHex(rec => {
+						console.log("rec0", rec);
+						rec = rec.toLowerCase();
+
+						this.RecoudText.push(rec);
+						if (this.RecoudText.length > 10) {
+							this.RecoudText.shift()
+						}
+
+
+						// this.isFinishChuHuo = true
+						// setTimeout(() => {
+						// 	this.$refs.paySuccesspopup.close('center')
+						// }, 3000)
+
+
+					}, send => {
+						console.log("send0", send);
+					});
+					/********************************以上是侦听信息***************/
+
+				});
+				// 	}
+				// })
+				// console.log(this.value)
+
+			},
+			changeTHJ() {
+
+				// this.range.forEach(item => {
+				// 	if (this.value1 == item.value) {
+				// 		console.log(item);
+
+
+				SPcoin.setBaudRate(9600);
+				SPcoin.setStopBits(1);
+				SPcoin.setDataBits(8);
+				SPcoin.setParity(0);
+				SPcoin.setPath("/dev/ttyS4");
+				// SPcoin.setPath(this.value1);
+
+				SPcoin.open(res => {
+					if (!res.status) {
+						uni.showToast({
+							title: res.msg,
+							duration: 2000,
+							icon: "none"
+						});
+						return
+					}
+					uni.showToast({
+						title: "切换弹簧机串口成功",
+						duration: 2000,
+					});
+
+
+					/*****************************************/
+					SPcoin.onMessageHex(rec => {
+						console.log("rec0", rec);
+						rec = rec.toLowerCase();
+
+
+						this.RecoudTextTHJ.push(rec);
+						if (this.RecoudTextTHJ.length > 10) {
+							this.RecoudTextTHJ.shift()
+						}
+
+
+						if (str.indexOf("aa100102") !== -1) {
+							// 出货成功响应帧
+
+							if (this.isQuHuo) { // 如果现在是取货流程，则接着发传送带启动指令
+
+								SPcoin.sendHex("AA140C010000000001000000000000000000A2BB");
+							} else {
+								// 现在是回收口出货流程，发送传送带启动指令
+								// SPcoin.sendHex("AA140C010003000001000000000000000000A2BB");
+								SPcoin.sendHex("AA0B0501030000000000BB");
+
+
+								setTimeout(() => {
+
+
+									SPcoin.sendHex("AA0B0501030200000000BB");
+								}, 5000)
+							}
+
+						}
+
+						if (str.indexOf("aa100c02") !== -1) {
+							// 启动传动出货成功响应帧
+
+							if (this.isQuHuo) { // 如果现在是取货流程，则接着发开启取货门指令
+
+								SPcoin.sendHex("AA1408010000001E00000000000000000000A2BB");
+							} else { // 现在是回收口出货流程，发送电机反传4秒
+								CSD.sendHex("aa070102bb");
+
+								setTimeout(() => {
+
+									CSD.sendHex("aa070100bb");
+								}, 4000)
+
+							}
+
+						}
+
+						if (str.indexOf("AA0B0C01FFFFFFFF0100BBAA100C03") !== -1) {
+
+							// let list1 = str.split("AA0B0C01FFFFFFFF0100BBAA100C03");
+							// list1[0]
+							let str1 = str.slice(30, 32);
+							this.CWMcode = this.getStatusMessage(str1)
+
+
+						}
+
+
+
+
+					}, send => {
+						console.log("send0", send);
+					});
+					/********************************以上是侦听信息***************/
+
+				});
+
+				// 	}
+				// })
+				// console.log(this.value1)
+			},
+			getStatusMessage(code) {
+				const statusMap = {
+					"00": "正常",
+					"01": "下发货道参数异常",
+					"02": "掉货检测异常，接货斗有货",
+					"03": "出货口检测异常，有货",
+					"04": "超时未到达出货层",
+					"05": "上升上限传感器异常",
+					"06": "货道出货掉货检测未检测到有货掉落",
+					"07": "掉货检测异常，货物没有掉落",
+					"08": "超时未到达出货口",
+					"09": "上升上限传感器异常",
+					"0A": "侧门开门失败",
+					"0B": "出货口未检测到有货到达，超时",
+					"0C": "出货口未检测到有货到达，超时",
+					"0D": "侧门关门失败",
+					"0E": "侧门关门超时，失败",
+					"0F": "下降复位超时",
+					"10": "下降复位超时",
+					"11": "取货门开门失败",
+					"13": "取货口还有货，未取走",
+					"14": "取货门关门超时，失败",
+					"15": "侧门复位失败",
+					"16": "下降复位超时",
+					"19": "初始化 掉货检测异常，接货斗有货",
+					"1A": "初始化 出货口检测异常，有货"
+				};
+
+				return statusMap[code] || "未知错误码";
+			},
+
+			sendGYCommand() {
+				this.SendText.push("AA0B0400000000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA0B0400000000000000BB");
+
+			},
+
+			sendJDJZZCommand() {
+
+				this.SendText.push("AA0B0501000000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				CSD.sendHex("AA0B0501000000000000BB");
+
+			},
+			sendJDJFZCommand() {
+
+				this.SendText.push("AA0B0501000100000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				CSD.sendHex("AA0B0501000100000000BB");
+
+			},
+			sendJDJTZCommand() {
+
+				this.SendText.push("AA0B0501000200000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				CSD.sendHex("AA0B0501000200000000BB");
+
+			},
+			Yto1() {
+				this.SendText.push("AA130701000000000100023e380000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA130701000000000100023e380000000000BB");
+			},
+			Yto2() {
+				this.SendText.push("AA13070100000000010001e4600000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA13070100000000010001e4600000000000BB");
+			},
+			Yto3() {
+				this.SendText.push("AA1307010000000001000182b80000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA1307010000000001000182b80000000000BB");
+			},
+
+			Yto4() {
+				this.SendText.push("AA1307010000000001000124f80000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA1307010000000001000124f80000000000BB");
+			},
+			Yto5() {
+				this.SendText.push("AA13070100000000010000e2900000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA13070100000000010000e2900000000000BB");
+			},
+			Yto6() {
+				this.SendText.push("AA13070100000000010000afc80000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA13070100000000010000afc80000000000BB");
+			},
+			Yto7() {
+				this.SendText.push("AA1307010000000001000075300000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA1307010000000001000075300000000000BB");
+			},
+			Yto8() {
+				this.SendText.push("AA130701000000000100003a980000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA130701000000000100003a980000000000BB");
+			},
+			Yto9() {
+				this.SendText.push("AA1307010000000001000000000000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA1307010000000001000000000000000000BB");
+			},
+			Chuhuokou() {
+
+				this.SendText.push("AA130701000000000100023a500000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA130701000000000100023a500000000000BB");
+			},
+			Huishoukou() {
+
+				this.SendText.push("AA1307010000000001000061a80000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				SPcoin.sendHex("AA1307010000000001000061a80000000000BB");
+			},
+
+			saveSheZhi() {
+				this.SendText.push("AA13070100000000FF000000000000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				CSD.sendHex("AA13070100000000FF000000000000000000BB");
+			},
+
+			HFSZ() {
+				this.SendText.push("AA13070100000000EE000000000000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				CSD.sendHex("AA13070100000000EE000000000000000000BB");
+			},
+
+
+			DQSZ() {
+				this.SendText.push("AA13070100000000EA000000000000000000BB");
+				if (this.SendText.length > 10) {
+					this.SendText.shift()
+				}
+				CSD.sendHex("AA13070100000000EA000000000000000000BB");
+			},
+
+
+			// image() {
+			// 	uni.chooseImage({
+			// 		count: 9,
+			// 		sizeType: ['original', 'compressed'],
+			// 		sourceType: ['album'], //这要注意，camera掉拍照，album是打开手机相册
+			// 		success: (res) => {
+			// 			// console.log(res);
+			// 			// const tempFilePaths = res.tempFilePaths;
+			// 			// this.zp = res.tempFilePaths[0];
+			// 			// console.log(this.zp)
+			// 			this.list.push(res.tempFilePaths[0])
+			// 			// console.log(this.list)
+
+			// 		}
+			// 	});
+			// },
+			sendTZTHJCommand() { // thj停止
+
+
+				if (this.alltimer)
+					clearInterval(this.alltimer)
+
+				let hex = this.NowBox.toString(16).padStart(2, '0'); // 转换为十六进制并补齐两位
+				console.log(hex); // 输出: 05
+				let str = "AA0B0201" + hex + "00BB"
+				SPcoin.sendHex(str);
+
+
+
+				this.SendTextTHJ.push(str);
+				if (this.SendTextTHJ.length > 10) {
+					this.SendTextTHJ.shift()
+				}
+			},
+
+			// async getPath() {
+
+			// 	const {
+			// 		data: res
+			// 	} = await uni.$http.get(`/cashier/getCashierPath2?deviceNum=${this.storeId}`);
+
+			// 	console.log(res);
+			// 	this.CashierPath = res.data.path
+			// 	this.baudRate = res.data.baudRate
+
+			// 	try {
+			// 		this.dodevcoin()
+			// 	} catch (e) {
+			// 		//TODO handle the exception
+			// 	}
+			// },
+
+			init() {
+				this.changeCSD()
+				this.changeTHJ()
+				// this.changeTHJ2()
+
+			},
+
+			logout() {
+				clearInterval(this.timer);
+				uni.reLaunch({
+					url: "/pages/GKogin/login"
+				})
+			},
+			back() {
+				clearInterval(this.timer);
+				uni.navigateTo({
+					url: "/pages/admin_send_cmd/admin_send_cmd",
+					animationType: "slide-in-left",
+				})
+			},
+			sendAllCommand() {
+
+				uni.showModal({
+					title: "一键测试",
+					content: "是否一键测试柜机",
+					success: (res) => {
+						if (res.confirm) {
+
+
+							this.NowBox = 1;
+							this.maxNumber = 50;
+							if (this.alltimer)
+								clearInterval(this.alltimer)
+
+							this.alltimer = setInterval(() => {
+
+									let hex = this.NowBox.toString(16).padStart(2, '0'); // 转换为十六进制并补齐两位
+									let str = "AA06010100" + hex + "1A0A00BB"
+
+									console.log(this.NowBox); // 打印当前数字
+									this.NowBox++; // 增加当前数字
+
+
+									this.SendTextTHJ.push(str);
+									if (this.SendTextTHJ.length > 10) {
+										this.SendTextTHJ.shift()
+									}
+
+									try {
+										SPcoin.sendHex(str);
+									} catch (e) {
+										//TODO handle the exception
+									}
+
+									// 如果当前数字超过最大数字，则清除定时器
+									if (this.NowBox > this.maxNumber) clearInterval(this.alltimer)
+								},
+								3000); // 3000毫秒 = 3
+
+							// let strtotal = ""
+
+							// for (let i = 1; i <= 100; i++) {
+
+							// 	this.NowBox = i
+							// 	let hex = this.NowBox.toString(16).padStart(2, '0'); // 转换为十六进制并补齐两位
+							// 	let str = "AA06010100" + hex + "1A0A00BB"
+							// 	// console.log(str); // 输出: 05
+							// 	strtotal += str + "\n"
+							// 	// SPcoin.sendHex(str);
+
+							// }
+						}
+
+					},
+					fail() {}
+				})
+
+
+			},
+
+
+
+
+			timeup() {
+				let that = this;
+				if (that.timer != null)
+					clearInterval(this.timer);
+				that.timer = setInterval(async () => {
+					// that.Seconds -= 1;
+					// 弹簧机查看通道
+					let storeId = that.storeId;
+
+
+					// 弹簧机查看是否有命令下发
+					const {
+						data: res1
+					} = await uni.$http.get(`/cashier/getCommand?deviceNum=${storeId}`);
+					console.log(res1);
+					if (res1.code !== 200) return uni.$showMsg(res1.message);
+
+					if (res1.data != null || res1.data != "") {
+						this.dodevcoin()
+						SPcoin.sendHex(res1.data);
+
+
+						this.SendTextTHJ.push(res1.data);
+						if (this.SendTextTHJ.length > 10) {
+							this.SendTextTHJ.shift()
+						}
+
+					}
+
+				}, 1000)
+			},
+
+			// -----------取货-----------------
+			initShouHuo(i) { // 取货流程
+				this.isQuHuo = true
+
+				console.log(i);
+				let str = "AA140A0100010000" + (Number(i)).toString(16).padStart(2, '0') + "000000000000000000A2BB";
+
+				console.log(str);
+				this.SendTextTHJ.push(str);
+				if (this.SendTextTHJ.length > 10) {
+					this.SendTextTHJ.shift()
+				}
+
+				SPcoin.sendHex(str);
+
+			},
+
+			async sendShouHuo(item) {
+				if (item > 10) {
+					item = "10" + item % 10
+
+				}
+
+				this.initShouHuo(item)
+
+
+			},
+
+			async sendShouHuo1(item) {
+				let str;
+				if (item > 10) {
+					item = "11" + item % 10
+
+				}else if(item==10){
+					item = "2" + item % 10
+				} else {
+					item = "1" + item % 10
+				}
+
+
+				this.initShouHuo(item)
+
+			},
+			async sendShouHuo2(item) {
+				let str;
+				if (item > 10) {
+					item = "12" + item % 10
+				}else if(item==10){
+					item = "3" + item % 10
+				} else {
+					item = "2" + item % 10
+				}
+
+				this.initShouHuo(item)
+
+			},
+			async sendShouHuo3(item) {
+				let str;
+				if (item > 10) {
+
+					item = "13" + item % 10
+				}else if(item==10){
+					item = "4" + item % 10
+				} else {
+					item = "3" + item % 10
+				}
+
+
+				this.initShouHuo(item)
+			},
+			async sendShouHuo4(item) {
+				let str;
+				if (item > 10) {
+
+					item = "14" + item % 10
+				}else if(item==10){
+					item = "5" + item % 10
+				} else {
+					item = "4" + item % 10
+				}
+
+				this.initShouHuo(item)
+			},
+			async sendShouHuo5(item) {
+				let str;
+				if (item > 10) {
+
+					item = "15" + item % 10
+				}else if(item==10){
+					item = "6" + item % 10
+				} else {
+					item = "5" + item % 10
+				}
+
+				this.initShouHuo(item)
+			},
+			async sendShouHuo6(item) {
+				let str;
+				if (item > 10) {
+
+					item = "16" + item % 10
+				}else if(item==10){
+					item = "7" + item % 10
+				} else {
+					item = "6" + item % 10
+				}
+
+				this.initShouHuo(item)
+			},
+			async sendShouHuo7(item) {
+				let str;
+				if (item > 10) {
+
+					item = "17" + item % 10
+				}else if(item==10){
+					item = "8" + item % 10
+				} else {
+					item = "7" + item % 10
+				}
+
+				this.initShouHuo(item)
+
+			},
+			async sendShouHuo8(item) {
+				let str;
+				if (item > 10) {
+
+					item = "18" + item % 10
+				}else if(item==10){
+					item = "9" + item % 10
+				} else {
+					item = "8" + item % 10
+				}
+
+				this.initShouHuo(item)
+
+			},
+
+			// ------------回收流程------------------
+
+
+
+			initShouHuo2(i) { // 回收口出货流程
+				this.isQuHuo = false
+
+				console.log(i);
+				
+				
+				let str = "AA14010100030000" + (Number(i)).toString(16).padStart(2, '0') + "000000000000000000A2BB";
+
+				console.log(str);
+				this.SendTextTHJ.push(str);
+				if (this.SendTextTHJ.length > 10) {
+					this.SendTextTHJ.shift()
+				}
+
+				// CSD.sendHex("aa070101bb"); // ETC主板），发下侧门开门指令
+				// setTimeout(() => {
+
+				// 	CSD.sendHex("aa070100bb");
+				// }, 4000)
+
+				SPcoin.sendHex(str);
+			},
+
+			async HuiShouSendShouHuo(item) {
+				if (item > 10) {
+					item = "10" + item % 10
+
+				}
+
+				this.initShouHuo2(item)
+
+
+			},
+
+			async HuiShouSendShouHuo1(item) {
+				let str;
+				if (item > 10) {
+					item = "11" + item % 10
+
+				}else if(item==10){
+					item = "2" + item % 10
+				}  else {
+					item = "1" + item % 10
+				}
+
+
+				this.initShouHuo2(item)
+
+			},
+			async HuiShouSendShouHuo2(item) {
+				let str;
+				if (item > 10) {
+					item = "12" + item % 10
+				}else if(item==10){
+					item = "3" + item % 10
+				} else {
+					item = "2" + item % 10
+				}
+
+				this.initShouHuo2(item)
+
+			},
+			async HuiShouSendShouHuo3(item) {
+				let str;
+				if (item > 10) {
+
+					item = "13" + item % 10
+				}else if(item==10){
+					item = "4" + item % 10
+				}  else {
+					item = "3" + item % 10
+				}
+
+
+				this.initShouHuo2(item)
+			},
+			async HuiShouSendShouHuo4(item) {
+				let str;
+				if (item > 10) {
+
+					item = "14" + item % 10
+				}else if(item==10){
+					item = "5" + item % 10
+				}  else {
+					item = "4" + item % 10
+				}
+
+				this.initShouHuo2(item)
+			},
+			async HuiShouSendShouHuo5(item) {
+				let str;
+				if (item > 10) {
+
+					item = "15" + item % 10
+				}else if(item==10){
+					item = "6" + item % 10
+				}  else {
+					item = "5" + item % 10
+				}
+
+				this.initShouHuo2(item)
+			},
+			async HuiShouSendShouHuo6(item) {
+				let str;
+				if (item > 10) {
+
+					item = "16" + item % 10
+				} else if(item==10){
+					item = "7" + item % 10
+				} else {
+					item = "6" + item % 10
+				}
+
+				this.initShouHuo2(item)
+			},
+			async HuiShouSendShouHuo7(item) {
+				let str;
+				if (item > 10) {
+
+					item = "17" + item % 10
+				}else if(item==10){
+					item = "8" + item % 10
+				}  else {
+					item = "7" + item % 10
+				}
+
+				this.initShouHuo2(item)
+
+			},
+
+			async HuiShouSendShouHuo8(item) {
+				let str;
+				if (item > 10) {
+
+					item = "18" + item % 10
+				}else if(item==10){
+					item = "9" + item % 10
+				}  else {
+					item = "8" + item % 10
+				}
+
+				this.initShouHuo2(item)
+
+			},
+			
+			
+			
+			// ------------履带测试流程------------------
+			
+			
+			initShouHuo3(i) { // 履带测试流程
+			
+				console.log(i);
+				
+				let str = "AA140A0100010000" + (Number(i)).toString(16).padStart(2, '0') + "000000000000000000A2BB";  // 履带测试
+				
+				console.log(str);
+				this.SendTextTHJ.push(str);
+				if (this.SendTextTHJ.length > 10) {
+					this.SendTextTHJ.shift()
+				}
+			
+				// CSD.sendHex("aa070101bb"); // ETC主板），发下侧门开门指令
+				// setTimeout(() => {
+			
+				// 	CSD.sendHex("aa070100bb");
+				// }, 4000)
+			
+				SPcoin.sendHex(str);
+			},
+			
+
+		}
+	}
+</script>
+
+<style lang="scss">
+	.CenShiIndex {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 2vw;
+		flex-direction: row;
+		justify-content: flex-start;
+		padding-left: 5px;
+
+		.ShouYeButton {
+			width: 90px;
+			height: 100px;
+			font-size: 20px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin-bottom: 10rpx;
+			margin-left: 3px;
+		}
+
+		.ShouYeButton2 {
+			width: 105px;
+			height: 100px;
+			font-size: 20px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin-bottom: 10rpx;
+			margin-left: 3px;
+		}
+
+		.ShouYeButton1 {
+
+			width: 170px;
+			height: 60px;
+			font-size: 20px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin-bottom: 10rpx;
+			margin-left: 3px;
+		}
+
+	}
+
+	// .ShouYeButton1 {
+
+	// 		width: 110px;
+	// 		height: 100px;
+	// 		font-size: 20px;
+	// 		display: flex;
+	// 		align-items: center;
+	// 		justify-content: center;
+	// 		margin-bottom: 10rpx;
+	// 		margin-left: 3px;
+	// }
+</style> -->
